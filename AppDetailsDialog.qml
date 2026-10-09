@@ -40,7 +40,7 @@ Item {
     // snapshots of the branch. See MetadataStore.fetchGitNotes().
     property var gitReleases: []         // [{version, date, notesHtml}]
     property bool gitNotesLoading: false
-    property string gitNotesKind: ""     // "release" | "commits" | ""
+    property string gitNotesKind: ""     // "release" | "changelog" | "commits" | "untouched" | ""
     property string gitNotesUrl: ""      // release or compare page upstream
     property int gitNotesMore: 0         // commits or blocks left unshown
     property int gitNotesCommits: 0
@@ -1823,7 +1823,7 @@ Item {
                     StyledRect {
                         width: parent.width
                         height: gitNotesCol.implicitHeight + Theme.spacingM * 2
-                        visible: dialog.gitNotesLoading || dialog.gitReleases.length > 0
+                        visible: dialog.gitNotesLoading || dialog.gitReleases.length > 0 || dialog.gitNotesKind === "untouched"
                         radius: Theme.cornerRadius
                         color: Theme.withAlpha(Ui.chipSurface, 0.45)
                         border.width: 1
@@ -1852,6 +1852,17 @@ Item {
                                     font.weight: Font.DemiBold
                                     color: Theme.surfaceText
                                 }
+                            }
+
+                            // A plugin sharing its repository with others is
+                            // reported as updated whenever any of them changes
+                            StyledText {
+                                Layout.fillWidth: true
+                                visible: dialog.gitNotesKind === "untouched"
+                                text: Tr.t("Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.")
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.surfaceVariantText
+                                wrapMode: Text.WordWrap
                             }
 
                             StyledText {

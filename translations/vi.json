@@ -116,6 +116,7 @@
     "Held: %1": "Đang giữ: %1",
     "Changelog": "Nhật ký thay đổi",
     "What's new upstream": "Có gì mới ở thượng nguồn",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "Bản cập nhật này không thay đổi gì ở plugin này. Plugin dùng chung kho mã với các plugin khác, và một trong số đó đã thay đổi.",
     "Commits since your build": "Commit kể từ bản dựng của bạn",
     "Asking upstream…": "Đang hỏi thượng nguồn…",
     "%1 commits": "%1 commit",

@@ -116,6 +116,7 @@
     "Held: %1": "Tillbakahållet: %1",
     "Changelog": "Ändringslogg",
     "What's new upstream": "Nytt uppströms",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "Inget i den här uppdateringen ändrar det här tillägget. Det delar sitt arkiv med andra tillägg, och ett av dem har ändrats.",
     "Commits since your build": "Incheckningar sedan ditt bygge",
     "Asking upstream…": "Frågar uppströms…",
     "%1 commits": "%1 incheckningar",

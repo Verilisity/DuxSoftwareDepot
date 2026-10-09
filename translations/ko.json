@@ -116,6 +116,7 @@
     "Held: %1": "보류됨: %1",
     "Changelog": "변경 내역",
     "What's new upstream": "업스트림의 새로운 내용",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "이 업데이트에는 이 플러그인의 변경 사항이 없습니다. 다른 플러그인과 저장소를 공유하며, 그중 하나가 변경되었습니다.",
     "Commits since your build": "이 빌드 이후의 커밋",
     "Asking upstream…": "업스트림에 확인하는 중…",
     "%1 commits": "커밋 %1개",

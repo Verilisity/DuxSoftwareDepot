@@ -116,6 +116,7 @@
     "Held: %1": "Bloqué : %1",
     "Changelog": "Changelog",
     "What's new upstream": "Nouveautés en amont",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "Rien dans cette mise à jour ne modifie ce plugin. Il partage son dépôt avec d'autres plugins, et l'un d'eux a changé.",
     "Commits since your build": "Commits depuis votre build",
     "Asking upstream…": "Interrogation du dépôt amont…",
     "%1 commits": "%1 commits",

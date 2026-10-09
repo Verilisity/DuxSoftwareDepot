@@ -36,6 +36,9 @@ jobs:
       - name: Upstream notes for packages built from git
         run: python3 scripts/test_gitnotes.py
 
+      - name: What a DMS plugin update changes
+        run: python3 scripts/test_plugin_notes.py
+
       - name: Reconciling the action log against install times
         run: python3 scripts/test_reconcile.py
 

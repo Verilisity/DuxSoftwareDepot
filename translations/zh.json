@@ -116,6 +116,7 @@
     "Held: %1": "已锁定：%1",
     "Changelog": "更新日志",
     "What's new upstream": "上游的新变化",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "此更新未对该插件做任何更改。它与其他插件共用一个仓库，其中某个插件发生了变化。",
     "Commits since your build": "自你的构建以来的提交",
     "Asking upstream…": "正在询问上游…",
     "%1 commits": "%1 个提交",

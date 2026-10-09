@@ -116,6 +116,7 @@
     "Held: %1": "Visszatartva: %1",
     "Changelog": "Változásnapló",
     "What's new upstream": "Újdonságok az upstreamben",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "Ebben a frissítésben semmi sem változtat ezen a bővítményen. Más bővítményekkel osztozik a tárolóján, és azok egyike változott.",
     "Commits since your build": "Commitok a buildje óta",
     "Asking upstream…": "Upstream lekérdezése…",
     "%1 commits": "%1 commit",

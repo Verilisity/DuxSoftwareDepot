@@ -116,6 +116,7 @@
     "Held: %1": "Wstrzymane: %1",
     "Changelog": "Lista zmian",
     "What's new upstream": "Co nowego u źródła",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "Nic w tej aktualizacji nie zmienia tej wtyczki. Dzieli repozytorium z innymi wtyczkami i jedna z nich się zmieniła.",
     "Commits since your build": "Commity od twojej kompilacji",
     "Asking upstream…": "Pytanie do źródła…",
     "%1 commits": "%1 commitów",

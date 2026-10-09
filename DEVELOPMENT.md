@@ -67,6 +67,7 @@ selectable would stop being a card you can click.
 | `scripts/appimage_squashfs.py` | Reads the desktop entry and icon out of an AppImage's squashfs without running the image |
 | `scripts/repo_backend.py` | Software sources: repositories and Flatpak remotes, Copr, RPM Fusion, Flathub (dnf family only) |
 | `scripts/brew_helper.py` | Homebrew: installed, outdated, upgrade — per-formula events read out of brew's own prose |
+| `scripts/plugin_notes.py` | What a DMS plugin update changes: its GitHub release, else its CHANGELOG.md section, else the commits in its own directory — read from the compare link the daemon reports |
 | `scripts/arch_news.py` | The Arch news feed: fetch, reduce, archive, track what has been read |
 | `scripts/action_log.py` · `scripts/reconcile.py` | Log append/prune; comparing install times against the log to find what changed outside this app |
 | `scripts/interp.py` | Re-exec under an interpreter that can see the distro's bindings — a pyenv or virtualenv python3 cannot |
@@ -77,7 +78,7 @@ selectable would stop being a card you can click.
 
 Everything in CI runs on any distribution, with the network and the package
 managers stubbed: `check_translations.py` (the 15 catalogs against the QML),
-`test_dep11.py`, `test_gitnotes.py`, `test_reconcile.py`, `test_ostree_helper.py`,
+`test_dep11.py`, `test_gitnotes.py`, `test_plugin_notes.py`, `test_reconcile.py`, `test_ostree_helper.py`,
 `test_arch_news.py`, `test_brew_helper.py`, `test_pacman_helper.py`,
 `test_flatpak_helper.py`, `test_simulate.py`, `test_appimage_squashfs.py`, and
 `test_shell_portability.py` —
@@ -156,4 +157,8 @@ setting up the recording falls through to running the command untouched.
 
 One thing to know when working on `Backend.qml`: it is a QML singleton, and
 `dms ipc call plugins reload` rebuilds the widget while keeping the singleton.
-Changes to it need the shell itself restarted.
+Changes to it need the shell itself restarted. The same goes, less visibly,
+for the other files the widget instantiates — `MetadataStore.qml`, say: the
+reload builds the new `UpdaterWidget.qml` on the type compiled earlier, so a
+function added to the store does not exist yet, and a binding that calls it
+evaluates to `undefined` without a word in the log.

@@ -95,6 +95,8 @@ FloatingWindow {
             brewFactsProcess.command = [Backend.python, Qt.resolvedUrl("scripts/brew_helper.py").toString().replace("file://", ""), "--info", pkg.name];
             brewFactsProcess.running = true;
         }
+        if (isPlugin)
+            win.store.fetchPluginNotes(pkg);
         updatesDialog.pluginFacts = isPlugin ? {
             author: manifest.author || "",
             category: manifest.category || "",
@@ -220,12 +222,18 @@ FloatingWindow {
         advisory: (win.widgetRoot && rowPkg) ? (win.widgetRoot.advisories[rowBase] || null) : null
 
         readonly property string rowGitKey: rowPkg ? win.store.gitNotesKey(rowBase, rowPkg.fromVersion, rowPkg.toVersion) : ""
-        readonly property var rowGitNotes: rowGitKey !== "" ? (win.store.gitNotes[rowGitKey] || null) : null
+        // A DMS plugin's notes come from the same card, asked differently
+        readonly property string rowPluginKey: rowPkg ? win.store.pluginNotesKey(rowPkg) : ""
+        readonly property var rowGitNotes: {
+            if (rowPluginKey !== "")
+                return win.store.pluginNotes[rowPluginKey] || null;
+            return rowGitKey !== "" ? (win.store.gitNotes[rowGitKey] || null) : null;
+        }
 
         releasesTitle: Tr.t("What's new")
         changelogLoading: rowIsRpm && releases.length === 0 && win.store.changelogs[rowBase] === undefined
         changelog: (rowIsRpm && releases.length === 0) ? (win.store.changelogs[rowBase] || "") : ""
-        gitNotesLoading: rowGitKey !== "" && releases.length === 0 && rowGitNotes === null
+        gitNotesLoading: (rowGitKey !== "" || rowPluginKey !== "") && releases.length === 0 && rowGitNotes === null
         gitReleases: rowGitNotes ? (rowGitNotes.releases || []) : []
         gitNotesKind: rowGitNotes ? (rowGitNotes.kind || "") : ""
         gitNotesUrl: rowGitNotes ? (rowGitNotes.url || "") : ""

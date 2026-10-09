@@ -20,6 +20,9 @@ Item {
     // gitNotesKey() -> {kind, repo, url, releases, more, commitCount} for
     // packages built from git (lazy-loaded, network)
     property var gitNotes: ({})
+    // pluginNotesKey() -> the same shape plus toVersion, for DMS plugin
+    // updates (scripts/plugin_notes.py; network, cached for a day)
+    property var pluginNotes: ({})
     property bool loading: false
 
     readonly property string scriptDir: Qt.resolvedUrl("scripts/").toString().replace("file://", "")
@@ -287,6 +290,87 @@ Item {
                 const next = store._gitQueue[0];
                 store._gitQueue = store._gitQueue.slice(1);
                 store._startGitNotes(next);
+            }
+        }
+    }
+    // ── What a DMS plugin update changes ────────────────────────────────────
+    // The daemon reports an update as two commits and a compare link; the
+    // version, the release notes and whether the update touches the plugin
+    // at all are asked of the forge. Keyed by that link, so a newer commit
+    // upstream is a new question.
+    function pluginNotesKey(pkg) {
+        if (!pkg || pkg.repo !== "dmsplugin" || !pkg.diffUrl)
+            return "";
+        return pkg.diffUrl + "|" + (pkg.path || "") + "|" + (pkg.fromVersion || "");
+    }
+
+    property var _pluginQueue: []
+
+    function fetchPluginNotes(pkg) {
+        const key = pluginNotesKey(pkg);
+        if (key === "" || pluginNotes[key] !== undefined)
+            return;
+        if (pluginNotesProcess._target === key || _pluginQueue.some(q => q.key === key))
+            return;
+        const request = {
+            key: key,
+            diffUrl: pkg.diffUrl,
+            path: pkg.path || "",
+            from: pkg.fromVersion || "",
+            id: pkg.name || ""
+        };
+        if (pluginNotesProcess.running) {
+            _pluginQueue = _pluginQueue.concat([request]);
+            return;
+        }
+        _startPluginNotes(request);
+    }
+
+    function _recordPluginNotes(key, result) {
+        if (key === "" || pluginNotes[key] !== undefined)
+            return;
+        const updated = Object.assign({}, pluginNotes);
+        updated[key] = result;
+        pluginNotes = updated;
+    }
+
+    function _startPluginNotes(request) {
+        pluginNotesProcess._target = request.key;
+        pluginNotesProcess.command = [Backend.python, scriptDir + "plugin_notes.py",
+                                      request.diffUrl, request.path, request.from, request.id];
+        pluginNotesProcess.running = true;
+    }
+
+    Process {
+        id: pluginNotesProcess
+
+        property string _target: ""
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let result = null;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    result = null;
+                }
+                if (result)
+                    store._recordPluginNotes(pluginNotesProcess._target, result);
+            }
+        }
+
+        // As with the git notes: the queue moves on once this run has exited,
+        // and a plugin that got no answer is recorded as asked
+        onExited: {
+            store._recordPluginNotes(pluginNotesProcess._target, {
+                kind: "",
+                releases: []
+            });
+            pluginNotesProcess._target = "";
+            if (store._pluginQueue.length > 0) {
+                const next = store._pluginQueue[0];
+                store._pluginQueue = store._pluginQueue.slice(1);
+                store._startPluginNotes(next);
             }
         }
     }

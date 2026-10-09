@@ -115,6 +115,7 @@
     "Held: %1": "Vastgezet: %1",
     "Changelog": "Changelog",
     "What's new upstream": "Wat is er nieuw bij upstream",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "Niets in deze update verandert deze plugin. Hij deelt zijn repository met andere plugins, en een daarvan is veranderd.",
     "Commits since your build": "Commits sinds jouw build",
     "Asking upstream…": "Upstream navragen…",
     "%1 commits": "%1 commits",

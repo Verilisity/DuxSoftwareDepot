@@ -116,6 +116,7 @@
     "Held: %1": "Удержано: %1",
     "Changelog": "История изменений",
     "What's new upstream": "Что нового в апстриме",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "В этом обновлении нет изменений этого плагина. Он делит репозиторий с другими плагинами, и один из них изменился.",
     "Commits since your build": "Коммиты с вашей сборки",
     "Asking upstream…": "Запрос к апстриму…",
     "%1 commits": "Коммитов: %1",

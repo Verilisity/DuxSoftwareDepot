@@ -3,6 +3,17 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
+## Unreleased
+
+- **A DMS plugin update shows what it changes.** The details of a plugin
+  update showed the plugin's description and nothing about the update. They
+  now show the release notes the author published for the new version, or
+  the matching part of the plugin's changelog, or else the commits since
+  your version — and the card shows the version it updates to. A plugin
+  that shares its repository with others is offered an update whenever any
+  of them changes; the details now say when nothing in it is about this
+  plugin. Thanks to @JDKamalakar for the idea (#32).
+
 ## 1.5.0 — 2026-10-09
 
 - **A BIOS update that needs the power adapter says so.** On battery

@@ -116,6 +116,7 @@
     "Held: %1": "保留: %1",
     "Changelog": "変更履歴",
     "What's new upstream": "アップストリームの新着",
+    "Nothing in this update changes this plugin. It shares its repository with other plugins, and one of those changed.": "この更新にはこのプラグインへの変更は含まれていません。リポジトリを他のプラグインと共有しており、そのいずれかが変更されました。",
     "Commits since your build": "このビルド以降のコミット",
     "Asking upstream…": "アップストリームに問い合わせ中…",
     "%1 commits": "%1 件のコミット",

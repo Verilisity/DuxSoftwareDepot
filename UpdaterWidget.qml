@@ -266,12 +266,25 @@ PluginComponent {
             if (heldNames.has(id))
                 continue;
             const manifest = (PluginService.availablePlugins || {})[id] || {};
+            const pkg = {
+                name: id,
+                repo: "dmsplugin",
+                fromVersion: manifest.version || plugin.version || "",
+                // The daemon names the two commits, not a version; the new
+                // version comes from the plugin.json upstream once
+                // plugin_notes.py has read it
+                diffUrl: plugin.diffUrl || "",
+                path: plugin.path || ""
+            };
+            const notes = store.pluginNotes[store.pluginNotesKey(pkg)] || null;
             out.push({
                 name: id,
                 displayName: plugin.name || manifest.name || id,
                 repo: "dmsplugin",
-                fromVersion: manifest.version || plugin.version || "",
-                toVersion: plugin.latestVersion || plugin.newVersion || "",
+                fromVersion: pkg.fromVersion,
+                toVersion: plugin.latestVersion || plugin.newVersion || (notes && notes.toVersion !== pkg.fromVersion ? (notes.toVersion || "") : ""),
+                diffUrl: pkg.diffUrl,
+                path: pkg.path,
                 // A plugin's manifest names a Material Symbols glyph rather
                 // than shipping an image, so its "icon" is a word. Ours says
                 // deployed_code_update; Quick Capture's says screenshot_region
@@ -285,6 +298,17 @@ PluginComponent {
         if (pluginUpdatesSupported)
             DMSService.listInstalled();
     }
+
+    // Asked ahead of the popup, so the card can show the version it goes to;
+    // a handful of plugins at most, and each answer is kept for a day. Also
+    // from Component.onCompleted: after a reload the daemon's list is there
+    // already, and a binding's first value emits no change.
+    function _prefetchPluginNotes() {
+        for (const plugin of pluginUpdates)
+            store.fetchPluginNotes(plugin);
+    }
+
+    onPluginUpdatesChanged: _prefetchPluginNotes()
 
     // ── AppStream search index, warmed out of sight ─────────────────────────
     // The index is a cache keyed by the catalogs' fingerprint, and everything
@@ -1404,6 +1428,7 @@ PluginComponent {
         _applyPillVisibility();
         if (pendingUpdates.length > 0)
             store.refresh(pendingUpdates);
+        _prefetchPluginNotes();
     }
 
     // pluginData (and with it the persisted snapshot) loads after component
