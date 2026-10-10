@@ -608,6 +608,68 @@ def run_set_repo(app_id, link):
     json.dump({"ok": True, "repo": repo, "latestTag": latest}, sys.stdout)
 
 
+AUTOSTART_DIR = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config")), "autostart")
+
+
+def _desktop_fields(path):
+    fields = {}
+    try:
+        with open(path, errors="replace") as f:
+            for line in f:
+                key, sep, value = line.partition("=")
+                if sep and key.strip() not in fields:
+                    fields[key.strip()] = value.strip()
+    except OSError:
+        pass
+    return fields
+
+
+def _runs_file(fields, file_path):
+    """Exec/TryExec starts this very file — quoted or not, but not a longer
+    path that merely begins with it."""
+    pattern = re.compile(r"(?:^|[\s\"'])" + re.escape(file_path) + r"(?:$|[\s\"'])")
+    return any(pattern.search(fields.get(key, "")) for key in ("Exec", "TryExec"))
+
+
+def _remove_entries_for(file_path):
+    """Every launcher and autostart entry that starts this AppImage. Many
+    AppImages write their own (Vito puts vito.desktop next to ours), and each
+    one left behind is a launcher item that no longer starts anything. A
+    themed icon such an entry brought along goes too, once no remaining entry
+    in the user's own folders asks for that name."""
+    icons = set()
+    for directory in (DESKTOP_DIR, AUTOSTART_DIR):
+        for desktop in glob.glob(os.path.join(directory, "*.desktop")):
+            fields = _desktop_fields(desktop)
+            if not _runs_file(fields, file_path):
+                continue
+            try:
+                os.unlink(desktop)
+            except OSError:
+                continue
+            icon = fields.get("Icon", "")
+            if icon and "/" not in icon:
+                icons.add(icon)
+    if not icons:
+        return
+    data_dirs = [os.environ.get("XDG_DATA_HOME", os.path.expanduser("~/.local/share"))]
+    data_dirs += os.environ.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").split(":")
+    for directory in [os.path.join(d, "applications") for d in data_dirs if d] + [AUTOSTART_DIR]:
+        for desktop in glob.glob(os.path.join(directory, "**", "*.desktop"), recursive=True):
+            icons.discard(_desktop_fields(desktop).get("Icon", ""))
+            if not icons:
+                return
+    for icon in icons:
+        for ext in ("png", "svg", "xpm"):
+            candidates = glob.glob(os.path.join(ICON_DIR, "hicolor", "*", "apps", f"{icon}.{ext}"))
+            candidates.append(os.path.join(ICON_DIR, f"{icon}.{ext}"))
+            for path in candidates:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
+
+
 def run_uninstall(app_id):
     records = load_records()
     keep = []
@@ -625,12 +687,8 @@ def run_uninstall(app_id):
     if not removed:
         json.dump({"ok": False, "error": "not found"}, sys.stdout)
         return
-    desktop = find_desktop_for(removed.get("file", "")) if removed.get("file") else None
-    if desktop:
-        try:
-            os.unlink(desktop["path"])
-        except OSError:
-            pass
+    if removed.get("file"):
+        _remove_entries_for(removed["file"])
     for path in (removed.get("file"), removed.get("icon"),
                  os.path.join(DESKTOP_DIR, f"dsd-appimage-{app_id}.desktop")):
         try:

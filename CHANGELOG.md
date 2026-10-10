@@ -21,6 +21,13 @@ in-app when the plugin offers its own update.
   now the package named and installed. Found on Zirconium, which ships
   flatpak without it.
 
+- **Removing an AppImage removes all of its launcher entries.** Many
+  AppImages add a launcher entry of their own, and sometimes an autostart
+  entry and an icon too. Removing the app took away only one of those
+  entries, so the app could stay in the launcher without starting anything.
+  Now every entry that starts the removed file goes, and so does an icon
+  that only that app used.
+
 ## 1.5.0 — 2026-10-09
 
 - **A BIOS update that needs the power adapter says so.** On battery
