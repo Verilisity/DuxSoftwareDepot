@@ -14,6 +14,13 @@ in-app when the plugin offers its own update.
   of them changes; the details now say when nothing in it is about this
   plugin. Thanks to @JDKamalakar for the idea (#32).
 
+- **On Fedora, a missing Flatpak library is named correctly.** When the
+  Flatpak helper could not load its library, the app said "flatpak is
+  missing" and offered to install flatpak — which was already installed.
+  The library comes in flatpak-libs, which flatpak does not pull in; it is
+  now the package named and installed. Found on Zirconium, which ships
+  flatpak without it.
+
 ## 1.5.0 — 2026-10-09
 
 - **A BIOS update that needs the power adapter says so.** On battery

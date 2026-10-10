@@ -388,8 +388,11 @@ Item {
 
     // Two packages, two failures, and telling them apart is the whole point:
     // the typelib is not in the PyGObject package on any of these distros —
-    // on Fedora and Arch it comes with flatpak itself, on Debian and Ubuntu
-    // it is gir1.2-flatpak-1.0, which flatpak does not pull in (#2). Naming
+    // on Arch it comes with flatpak itself, on Debian and Ubuntu it is
+    // gir1.2-flatpak-1.0, and on Fedora it is flatpak-libs; neither of those
+    // two is pulled in by flatpak (#2). A Fedora that happens to have
+    // flatpak-libs got there through something else; Zirconium, a bootc
+    // image, ships flatpak without it, and was told to install flatpak. Naming
     // the bindings package for a missing typelib is what #15 reported:
     // "python3-gobject-base is missing" on a machine that had it, where
     // installing it again could not change the answer.
@@ -398,7 +401,7 @@ Item {
     // there, and installing the pair is what fixes it either way.
     readonly property string flatpakRequirement: {
         const bindings = backendId === "apt" ? "python3-gi" : (backendId === "pacman" ? "python-gobject" : "python3-gobject-base");
-        const typelib = backendId === "apt" ? "gir1.2-flatpak-1.0" : "flatpak";
+        const typelib = backendId === "apt" ? "gir1.2-flatpak-1.0" : (backendId === "pacman" ? "flatpak" : "flatpak-libs");
         if (flatpakHelperCause === "bindings")
             return bindings;
         if (flatpakHelperCause === "typelib")
