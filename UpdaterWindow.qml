@@ -499,6 +499,23 @@ FloatingWindow {
     // appears (persisted in pluginData)
     readonly property string selfUpdateDismissedVersion: (widgetRoot && widgetRoot.pluginData) ? (widgetRoot.pluginData.selfUpdateDismissedVersion || "") : ""
 
+    // End-of-life notices dismissed via their X, per case: the ref, what its
+    // remote says about it, and which apps still use it. When any of that
+    // changes — the last app moves on and the runtime can go, or a successor
+    // is named — it is a different case and the notice comes back.
+    function eolKey(r) {
+        return [r.ref, r.eol || "", r.eolRebase || "", (r.usedBy || []).join(",")].join("|");
+    }
+    readonly property var eolDismissed: (widgetRoot && widgetRoot.pluginData) ? (widgetRoot.pluginData.eolDismissed || []) : []
+    readonly property var eolShown: ((widgetRoot ? widgetRoot.eolRefs : []) || []).filter(r => eolDismissed.indexOf(eolKey(r)) < 0)
+
+    function dismissEol() {
+        // Kept to the cases still present, so the list cannot grow forever
+        const current = ((widgetRoot ? widgetRoot.eolRefs : []) || []).map(r => eolKey(r));
+        const kept = eolDismissed.filter(k => current.indexOf(k) >= 0);
+        PluginService.savePluginData("dankSoftwareDepot", "eolDismissed", kept.concat(eolShown.map(r => eolKey(r))));
+    }
+
     function _versionNewer(remote, local) {
         const a = String(remote).split(".").map(n => parseInt(n, 10) || 0);
         const b = String(local).split(".").map(n => parseInt(n, 10) || 0);
@@ -4261,7 +4278,7 @@ FloatingWindow {
         // ── End-of-life components (no longer maintained upstream) ─────────
         Rectangle {
             Layout.fillWidth: true
-            visible: win.currentTab === 0 && win.widgetRoot !== null && (win.widgetRoot.eolRefs || []).length > 0
+            visible: win.currentTab === 0 && win.eolShown.length > 0
             implicitHeight: eolRow.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
             color: Theme.withAlpha(Theme.error, 0.10)
@@ -4287,7 +4304,7 @@ FloatingWindow {
                     // runtime's extensions (Mesa, the VAAPI driver, its
                     // Locale) arrive folded into it, and the apps that still
                     // run on it are what keep it here.
-                    text: ((win.widgetRoot ? win.widgetRoot.eolRefs : []) || []).map(r => {
+                    text: win.eolShown.map(r => {
                         const name = r.kind === "runtime" && r.branch ? (r.appName || r.id) + " " + r.branch : (r.appName || r.id);
                         if (r.eolRebase)
                             return Tr.t("%1 is no longer maintained; its successor is %2.").arg(name).arg(r.eolRebase.split("/")[1] || r.eolRebase);
@@ -4300,6 +4317,15 @@ FloatingWindow {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     wrapMode: Text.WordWrap
+                }
+
+                DankActionButton {
+                    buttonSize: 28
+                    iconName: "close"
+                    iconSize: 16
+                    iconColor: Theme.surfaceVariantText
+                    tooltipText: Tr.t("Dismiss")
+                    onClicked: win.dismissEol()
                 }
             }
         }

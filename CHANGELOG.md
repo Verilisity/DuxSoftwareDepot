@@ -66,7 +66,9 @@ in-app when the plugin offers its own update.
   org.freedesktop.Platform.Locale, Intel VAAPI driver, Freedesktop
   Platform" — as if Mesa itself were no longer maintained. It now says
   "Freedesktop Platform 24.08 is no longer maintained", names the apps that
-  still use it, and says so when none do.
+  still use it, and says so when none do. The notice can be dismissed; it
+  comes back only when the situation changes, such as when the last app
+  stops using the runtime.
 
 ## 1.5.0 — 2026-10-09
 
