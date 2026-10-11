@@ -85,7 +85,7 @@ PluginSettings {
                 spacing: Theme.spacingM
 
                 DankIcon {
-                    name: "view_compact"
+                    name: "toolbar"
                     size: 20
                     color: Theme.primary
                 }
@@ -151,7 +151,9 @@ PluginSettings {
                     Image {
                         anchors.fill: parent
                         anchors.margins: 4
-                        source: "icons/dankSoftwareDepot.svg"
+                        // The app's own icon, as the window and the bar use it;
+                        // the path #21 put here never existed
+                        source: Qt.resolvedUrl("assets/icons/dank-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
                         sourceSize.width: 80
                         sourceSize.height: 80
                         fillMode: Image.PreserveAspectFit
