@@ -820,10 +820,10 @@ Item {
         }
         if (sectionMode)
             return sectionMatches.length;
+        // The storefront's apps are rows of their own under each heading
         let total = 0;
-        for (const sec of listModel) {
-            total += (sec.items || []).length;
-        }
+        for (const row of listModel)
+            total += row.type === "app" ? 1 : (row.items || []).length;
         return total;
     }
 
@@ -954,13 +954,27 @@ Item {
                 continue;
             const items = group.items.filter(item => matchesSourceFilter(item));
             if (items.length > 0) {
+                // The heading is a row of its own and so is each app under
+                // it, as in Installed: a card holding its five rows was one
+                // delegate, built whole in the frame it scrolled in — a
+                // stutter per category.
                 rows.push({
                     type: "category_card",
                     category: group.category,
                     label: group.label,
                     total: items.length,
-                    items: items.slice(0, 5)
+                    items: [],
+                    headingOnly: true,
+                    first: rows.length === 0
                 });
+                const shown = items.slice(0, 5);
+                for (let i = 0; i < shown.length; i++)
+                    rows.push({
+                        type: "app",
+                        data: shown[i],
+                        rowIndex: i,
+                        totalCount: shown.length
+                    });
             }
         }
         return rows;
@@ -1745,6 +1759,7 @@ Item {
                     Component.onCompleted: {
                         Ui.softenScrollbar(resultsList);
                         Ui.takeOverWheel(resultsList);
+                        Ui.registerBench("install", resultsList);
                     }
 
                     WheelHandler {
@@ -1941,7 +1956,11 @@ Item {
                 width: resultsList.width
                 // Space above and below, plus what the list's spacing gave
                 // between categories before it became the rows' 2px
-                implicitHeight: cardCol.implicitHeight + Theme.spacingM * 3 - 2
+                // A heading alone keeps the old card's spacing: the gap the
+                // card left below its last row now sits above the next heading
+                readonly property bool headingOnly: rowData.headingOnly === true
+                readonly property real topGap: headingOnly && rowData.first !== true ? Theme.spacingM * 3 - 2 : Theme.spacingM
+                implicitHeight: headingOnly ? cardCol.implicitHeight + topGap : cardCol.implicitHeight + Theme.spacingM * 3 - 2
                 radius: Theme.cornerRadius
                 // No fill of its own: the rows inside are already containers,
                 // and a tinted box around a stack of tinted boxes is a third
@@ -1958,7 +1977,7 @@ Item {
                     anchors.top: parent.top
                     // Space above and below, none at the sides: the heading
                     // and rows line up with the list's edge, as in Installed
-                    anchors.topMargin: Theme.spacingM
+                    anchors.topMargin: cardContainer.topGap
                     // Rows 2px apart, as in every other list (#29); the
                     // heading keeps its distance through its own margin
                     spacing: 2

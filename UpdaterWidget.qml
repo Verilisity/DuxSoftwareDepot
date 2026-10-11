@@ -1390,6 +1390,16 @@ PluginComponent {
                 + " | " + Backend.simDebug();
         }
 
+        // Scroll a list down at a fixed speed and time every frame:
+        // `bench installed 1500` (px/s), then `benchresult` once it has run.
+        function bench(name: string, speed: int): string {
+            return Ui.bench(name, speed);
+        }
+
+        function benchresult(): string {
+            return Ui.benchResult;
+        }
+
         function recordings(): string {
             Backend.refreshRecordings();
             const rows = (Backend.recordings || []).map(r => r.name + " (" + r.packages + " packages, " + r.seconds + "s, " + (r.tags || []).join("+") + ")");

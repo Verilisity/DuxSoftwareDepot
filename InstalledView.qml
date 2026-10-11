@@ -1429,6 +1429,7 @@ Item {
             Component.onCompleted: {
                 Ui.softenScrollbar(installedList);
                 Ui.takeOverWheel(installedList);
+                Ui.registerBench("installed", installedList);
             }
 
             WheelHandler {

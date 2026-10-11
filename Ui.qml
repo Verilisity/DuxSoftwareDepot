@@ -368,6 +368,61 @@ Item {
 
     property var _shellWheels: new Map()
 
+    // ── Scroll benchmark (development installs only, via the Dev IPC) ───────
+    // Drives a registered list downwards at a fixed speed (px/s, a brisk
+    // flick by default) for at most ten seconds, and keeps
+    // every frame time, so "this list stutters and that one does not" can be
+    // measured and compared, and a change can be judged by numbers.
+    property var _benchViews: ({})
+    property var _bench: null
+    property string benchResult: "no run yet"
+
+    function registerBench(name, view) {
+        _benchViews[name] = view;
+    }
+
+    function bench(name, speed) {
+        const view = _benchViews[name];
+        if (!view)
+            return "no list registered as " + name + " (" + Object.keys(_benchViews).join(", ") + ")";
+        if (!view.visible)
+            return name + " is not on screen";
+        view.contentY = view.originY;
+        _bench = { view: view, name: name, speed: speed > 0 ? speed : 1500, elapsed: 0, frames: [] };
+        benchResult = "running";
+        benchFrames.running = true;
+        return "benchmarking " + name;
+    }
+
+    FrameAnimation {
+        id: benchFrames
+        running: false
+        onTriggered: {
+            const b = ui._bench;
+            if (!b) {
+                running = false;
+                return;
+            }
+            // The first frame's time is the gap since the call, not a frame
+            if (b.elapsed > 0)
+                b.frames.push(frameTime * 1000);
+            b.elapsed += frameTime;
+            const end = Math.max(0, b.view.contentHeight - b.view.height);
+            const span = Math.min(end, b.speed * b.elapsed);
+            b.view.contentY = b.view.originY + span;
+            if (span < end && b.elapsed < 10)
+                return;
+            running = false;
+            const f = b.frames.slice().sort((x, y) => x - y);
+            const pct = p => f[Math.min(f.length - 1, Math.floor(f.length * p))].toFixed(1);
+            const over = ms => f.filter(x => x > ms).length;
+            ui.benchResult = b.name + ": " + f.length + " frames over " + Math.round(span) + "px"
+                + " · median " + pct(0.5) + "ms · p95 " + pct(0.95) + "ms · max " + f[f.length - 1].toFixed(1) + "ms"
+                + " · >20ms " + over(20) + " · >33ms " + over(33) + " · >50ms " + over(50);
+            ui._bench = null;
+        }
+    }
+
     // True when the event went to the shell's handler and the smooth wheel
     // should leave it alone.
     function wheelToShell(view, event) {
