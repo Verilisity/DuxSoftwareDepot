@@ -28,6 +28,13 @@ in-app when the plugin offers its own update.
   Now every entry that starts the removed file goes, and so does an icon
   that only that app used.
 
+- **An AppImage updated outside the depot is no longer offered again.** When
+  an app's own updater, Gearlever or a manual copy replaced the file, the
+  depot still judged it by the release it had installed, and kept offering
+  the latest release however often it checked. It now notices that the file
+  changed: if it matches the latest release, that release counts as
+  installed.
+
 ## 1.5.0 — 2026-10-09
 
 - **A BIOS update that needs the power adapter says so.** On battery
