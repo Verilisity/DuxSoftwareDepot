@@ -1428,13 +1428,17 @@ Item {
 
             Component.onCompleted: {
                 Ui.softenScrollbar(installedList);
-                Ui.disableDefaultWheelHandler(installedList);
+                Ui.takeOverWheel(installedList);
             }
 
             WheelHandler {
                 id: installedSmoothWheel
-                acceptedDevices: PointerDevice.Mouse
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                 onWheel: (event) => {
+                    if (Ui.wheelToShell(installedList, event)) {
+                        installedScrollAnim.stop();
+                        return;
+                    }
                     if (installedList.contentHeight <= installedList.height) return;
                     const delta = event.angleDelta.y;
                     if (delta === 0) return;

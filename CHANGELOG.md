@@ -17,6 +17,17 @@ in-app when the plugin offers its own update.
   hover, selection, a failure or the installed source in that surface.
   Thanks to @apollo79 for the issue and to @JDKamalakar for the discussion.
 
+- **Scrolling with a touchpad is smooth again, with momentum.** In
+  Installed, Install and an app's details, every small touchpad movement
+  jumped a whole wheel step, and a flick stopped dead. The mouse wheel
+  keeps its smooth steps; the touchpad goes back to the shell's own
+  scrolling. The settings and About pages scroll the way the rest of the
+  shell does too, and show a scrollbar.
+
+- **The globe and lock in an app's details say what they do.** Hovering
+  them shows "Open website" with the address, and whether the lock holds
+  the app back from updates or lets it update again.
+
 - **A DMS plugin update shows what it changes.** The details of a plugin
   update showed the plugin's description and nothing about the update. They
   now show the release notes the author published for the new version, or

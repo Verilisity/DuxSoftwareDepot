@@ -809,7 +809,7 @@ Item {
                 id: body
                 Component.onCompleted: {
                     Ui.softenScrollbar(body);
-                    Ui.disableDefaultWheelHandler(body);
+                    Ui.takeOverWheel(body);
                 }
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -818,8 +818,12 @@ Item {
 
                 WheelHandler {
                     id: smoothWheel
-                    acceptedDevices: PointerDevice.Mouse
+                    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                     onWheel: (event) => {
+                        if (Ui.wheelToShell(body, event)) {
+                            bodyScrollAnim.stop();
+                            return;
+                        }
                         if (body.contentHeight <= body.height) return;
                         const delta = event.angleDelta.y;
                         if (delta === 0) return;
@@ -2535,6 +2539,12 @@ Item {
                         spacing: Theme.spacingXS
                         visible: !dialog.busy
 
+                        // An icon alone does not say what a globe or a lock
+                        // does here; the tooltips the #21 overhaul dropped
+                        DankTooltipV2 {
+                            id: footerTooltip
+                        }
+
                         // Website Button Container
                         Rectangle {
                             id: webBtnRoot
@@ -2573,6 +2583,8 @@ Item {
                                 cursorShape: Qt.PointingHandCursor
                                 onPressed: (m) => webRip.trigger(m.x, m.y)
                                 onClicked: Qt.openUrlExternally(dialog.appData.homepage)
+                                onEntered: footerTooltip.show(Tr.t("Open website — %1").arg((dialog.appData.homepage || "").replace(/^[a-z]+:\/\//i, "").split("/")[0]), webBtnRoot, 0, 4, "top")
+                                onExited: footerTooltip.hide()
                             }
                         }
 
@@ -2618,7 +2630,12 @@ Item {
                                 cursorShape: Qt.PointingHandCursor
                                 enabled: !dialog.busy
                                 onPressed: (m) => holdRip.trigger(m.x, m.y)
-                                onClicked: dialog.holdToggleRequested()
+                                onClicked: {
+                                    footerTooltip.hide();
+                                    dialog.holdToggleRequested();
+                                }
+                                onEntered: footerTooltip.show(dialog.appData.held === true ? Tr.t("Stop holding (updates allowed again)") : Tr.t("Hold (skip in updates)"), holdBtnRoot, 0, 4, "top")
+                                onExited: footerTooltip.hide()
                             }
                         }
                     }

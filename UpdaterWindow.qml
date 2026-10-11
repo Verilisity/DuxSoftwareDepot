@@ -885,8 +885,11 @@ FloatingWindow {
                     // ═════════════════════════════════════════════════════
                     // 1. PREFERENCES VIEW (Dynamic Segmented Rows with Icons)
                     // ═════════════════════════════════════════════════════
-                    Flickable {
+                    // DankFlickable rather than a bare Flickable: the shell's
+                    // wheel and touchpad momentum, and its scrollbar
+                    DankFlickable {
                         id: prefFlickable
+                        Component.onCompleted: Ui.softenScrollbar(prefFlickable)
                         anchors.fill: parent
                         contentWidth: width
                         contentHeight: prefColumn.implicitHeight
@@ -1731,8 +1734,9 @@ FloatingWindow {
                     // ═════════════════════════════════════════════════════
                     // 2. ABOUT / INFO VIEW (Animated Slide In)
                     // ═════════════════════════════════════════════════════
-                    Flickable {
+                    DankFlickable {
                         id: aboutFlickable
+                        Component.onCompleted: Ui.softenScrollbar(aboutFlickable)
                         anchors.fill: parent
                         contentWidth: width
                         contentHeight: aboutScrollColumn.implicitHeight

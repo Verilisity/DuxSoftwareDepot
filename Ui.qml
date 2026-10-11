@@ -341,9 +341,19 @@ Item {
             bar.hideTimer.restart();
     }
 
-    // Disable the built-in jumpy mouse wheel handler in DankFlickable / DankListView
-    // so our smooth interpolated scroll handler controls the animation smoothly.
-    function disableDefaultWheelHandler(view) {
+    // The smooth wheels in Installed, Install and the details dialog animate
+    // a mouse wheel's notches, which DankFlickable / DankListView jump
+    // through. Everything else — a touchpad, a high-resolution wheel — is the
+    // shell's: its handler is where the momentum lives. #21 switched that
+    // handler off and let the smooth wheel take every event, so each small
+    // touchpad step became a 120px jump: stutter, and no momentum at all.
+    //
+    // Which is which is read from the event, as DMS does (WheelInput.js):
+    // Qt on Wayland reports a touchpad as a mouse, so acceptedDevices cannot
+    // tell them apart. The shell's handler stays disabled, so the two never
+    // both act on one event, and is handed the events that are its own by
+    // emitting its wheel signal.
+    function takeOverWheel(view) {
         if (!view) return;
         _scrollbarOf(view);
         const kids = view.children || [];
@@ -351,8 +361,24 @@ Item {
             const child = kids[i];
             if (child && child.acceptedDevices !== undefined && child.touchpadSpeed !== undefined) {
                 child.enabled = false;
+                _shellWheels.set(view, child);
             }
         }
+    }
+
+    property var _shellWheels: new Map()
+
+    // True when the event went to the shell's handler and the smooth wheel
+    // should leave it alone.
+    function wheelToShell(view, event) {
+        const touchpad = event.phase !== Qt.NoScrollPhase && (event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0);
+        const notched = event.angleDelta.y !== 0 && event.angleDelta.y % 120 === 0;
+        if (!touchpad && notched)
+            return false;
+        const shell = _shellWheels.get(view);
+        if (shell)
+            shell.wheel(event);
+        return true;
     }
 
     // AND-search: every whitespace-separated word must occur somewhere in the
