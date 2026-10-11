@@ -551,5 +551,12 @@
     "Visual updater and software hub for DankMaterialShell.": "Наочний оновлювач і центр програм для DankMaterialShell.",
     "What did you think? (optional)": "Що ви думаєте? (необов'язково)",
     "Your name (optional)": "Ваше ім'я (необов'язково)",
-    "new": "нове"
+    "new": "нове",
+    "On the main bar": "На головній панелі",
+    "There is no main bar to place the widget on.": "Немає головної панелі, на яку можна розмістити віджет.",
+    "Not on the bar yet. Choose where it goes.": "Ще не на панелі. Виберіть, де він буде.",
+    "Choose another side to move it.": "Виберіть інший бік, щоб перемістити його.",
+    "Left": "Ліворуч",
+    "Center": "По центру",
+    "Right": "Праворуч"
 }

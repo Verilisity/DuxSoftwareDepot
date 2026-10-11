@@ -18,6 +18,111 @@ PluginSettings {
     ToggleSetting { id: s_pill; settingKey: "pillOpensWindow"; label: Tr.t("Bar click opens window"); defaultValue: false; visible: false; height: 0 }
     SelectionSetting { id: s_auto; settingKey: "autoUpdateMode"; label: Tr.t("Automatic updates"); defaultValue: "notify"; visible: false; height: 0; options: [{label:"", value:""}] }
 
+    // ── On the main bar ────────────────────────────────────
+    // First on the page because it is the first thing a new user needs:
+    // enabling a plugin does not put its widget anywhere, and the way to do
+    // that by hand is a different settings page. One choice — left, centre
+    // or right of the main bar — places it there, or moves it if it already
+    // is on that bar. DMS's own setters, so its bar editor stays in step.
+    StyledRect {
+        id: barPlacement
+        width: parent.width
+        radius: Theme.cornerRadius
+        color: Theme.withAlpha(Ui.chipSurface, 0.45)
+        implicitHeight: placeCol.implicitHeight + Theme.spacingM * 2
+
+        readonly property var sideKeys: ["leftWidgets", "centerWidgets", "rightWidgets"]
+
+        function entryId(widget) {
+            return typeof widget === "string" ? widget : ((widget && widget.id) || "");
+        }
+
+        readonly property var mainBar: {
+            void SettingsData.barConfigs;
+            return SettingsData.getPrimaryBarConfig();
+        }
+
+        // Where the widget sits on the main bar, or -1
+        readonly property int sideIndex: {
+            if (!mainBar)
+                return -1;
+            for (let i = 0; i < sideKeys.length; i++) {
+                if ((mainBar[sideKeys[i]] || []).some(w => entryId(w) === root.pluginId))
+                    return i;
+            }
+            return -1;
+        }
+
+        function place(side) {
+            if (!mainBar || side === sideIndex)
+                return;
+            const lists = sideKeys.map(key => (mainBar[key] || []).filter(w => entryId(w) !== root.pluginId));
+            const entry = {
+                "id": root.pluginId,
+                "enabled": true
+            };
+            // On the right, next to the other status widgets rather than past
+            // the control centre button that usually closes the bar
+            const target = lists[side];
+            const cc = side === 2 ? target.findIndex(w => entryId(w) === "controlCenterButton") : -1;
+            if (cc >= 0)
+                target.splice(cc, 0, entry);
+            else
+                target.push(entry);
+            SettingsData.setDankBarLeftWidgets(lists[0]);
+            SettingsData.setDankBarCenterWidgets(lists[1]);
+            SettingsData.setDankBarRightWidgets(lists[2]);
+        }
+
+        ColumnLayout {
+            id: placeCol
+            anchors.fill: parent
+            anchors.margins: Theme.spacingM
+            spacing: Theme.spacingM
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingM
+
+                DankIcon {
+                    name: "view_compact"
+                    size: 20
+                    color: Theme.primary
+                }
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    StyledText {
+                        text: Tr.t("On the main bar")
+                        font.pixelSize: Theme.fontSizeMedium
+                        font.weight: Font.Medium
+                        color: Theme.surfaceText
+                    }
+
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: !barPlacement.mainBar ? Tr.t("There is no main bar to place the widget on.") : (barPlacement.sideIndex < 0 ? Tr.t("Not on the bar yet. Choose where it goes.") : Tr.t("Choose another side to move it."))
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        wrapMode: Text.WordWrap
+                    }
+                }
+            }
+
+            DankButtonGroup {
+                visible: !!barPlacement.mainBar
+                model: [Tr.t("Left"), Tr.t("Center"), Tr.t("Right")]
+                currentIndex: barPlacement.sideIndex
+                onSelectionChanged: (index, selected) => {
+                    if (selected)
+                        barPlacement.place(index);
+                }
+            }
+        }
+    }
+
     // ── About & Plugin Info Card ───────────────────────────
     StyledRect {
         width: parent.width

@@ -551,5 +551,12 @@
     "Visual updater and software hub for DankMaterialShell.": "Aggiornamento visuale e centro software per DankMaterialShell.",
     "What did you think? (optional)": "Che cosa ne pensi? (facoltativo)",
     "Your name (optional)": "Il tuo nome (facoltativo)",
-    "new": "nuovo"
+    "new": "nuovo",
+    "On the main bar": "Sulla barra principale",
+    "There is no main bar to place the widget on.": "Non c'è una barra principale su cui mettere il widget.",
+    "Not on the bar yet. Choose where it goes.": "Non è ancora sulla barra. Scegli dove metterlo.",
+    "Choose another side to move it.": "Scegli un altro lato per spostarlo.",
+    "Left": "Sinistra",
+    "Center": "Centro",
+    "Right": "Destra"
 }

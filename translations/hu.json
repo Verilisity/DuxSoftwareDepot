@@ -551,5 +551,12 @@
     "Visual updater and software hub for DankMaterialShell.": "Vizuális frissítő és szoftverközpont a DankMaterialShellhez.",
     "What did you think? (optional)": "Mi a véleményed? (opcionális)",
     "Your name (optional)": "A neved (opcionális)",
-    "new": "új"
+    "new": "új",
+    "On the main bar": "A fő sávon",
+    "There is no main bar to place the widget on.": "Nincs fő sáv, amelyre a widget kerülhetne.",
+    "Not on the bar yet. Choose where it goes.": "Még nincs a sávon. Válaszd ki, hová kerüljön.",
+    "Choose another side to move it.": "Válassz másik oldalt az áthelyezéshez.",
+    "Left": "Bal",
+    "Center": "Közép",
+    "Right": "Jobb"
 }

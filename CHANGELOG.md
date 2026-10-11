@@ -26,6 +26,12 @@ in-app when the plugin offers its own update.
   settings and About pages scroll the way the rest of the shell does too,
   and show a scrollbar.
 
+- **Put the widget on the bar from the plugin's settings.** Enabling the
+  plugin did not put its widget anywhere; that took a trip to the bar's
+  own settings. The plugin's settings in DMS now start with "On the main
+  bar": choose left, centre or right and the widget goes there, or moves
+  there if it is already on the bar.
+
 - **Right-clicking the bar pill opens the window.** Whatever a left click
   is set to do, a right click always opens the full window; the setting
   "Bar click opens window" says so.
