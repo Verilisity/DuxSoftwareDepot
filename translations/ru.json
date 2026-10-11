@@ -100,7 +100,7 @@
     "Confirm before updating": "Подтверждать перед обновлением",
     "Require a second click on Update All before the run starts.": "Требовать повторного нажатия «Обновить всё» перед запуском.",
     "Bar click opens window": "Нажатие на панели открывает окно",
-    "Open this window instead of the compact popout when clicking the bar pill.": "Открывать это окно вместо компактной панели при нажатии индикатора.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "Открывать это окно вместо компактной панели при нажатии на значок в панели. Правый щелчок всегда открывает окно.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "Открывать отдельное окно обновлений вместо компактной панели при нажатии индикатора.",
     "Off": "Выключено",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "Интервал проверки и игнорируемые пакеты настраиваются в DMS: Настройки → Обновление системы.",

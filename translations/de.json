@@ -100,7 +100,7 @@
     "Confirm before updating": "Vor dem Aktualisieren bestätigen",
     "Require a second click on Update All before the run starts.": "Zweiten Klick auf Alle aktualisieren verlangen, bevor der Lauf startet.",
     "Bar click opens window": "Leistenklick öffnet Fenster",
-    "Open this window instead of the compact popout when clicking the bar pill.": "Beim Klick auf das Leisten-Widget dieses Fenster statt des kompakten Popouts öffnen.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "Beim Klick auf die Leiste dieses Fenster statt des kompakten Popouts öffnen. Ein Rechtsklick öffnet immer das Fenster.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "Beim Klick auf das Leisten-Widget das eigenständige Fenster statt des kompakten Popouts öffnen.",
     "Off": "Aus",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "Prüfintervall und ignorierte Pakete werden in den DMS-Einstellungen → Systemupdater verwaltet.",

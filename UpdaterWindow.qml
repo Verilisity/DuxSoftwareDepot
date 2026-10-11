@@ -1472,7 +1472,7 @@ FloatingWindow {
 
                                         StyledText {
                                             Layout.fillWidth: true
-                                            text: Tr.t("Open this window instead of the compact popout when clicking the bar pill.")
+                                            text: Tr.t("Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.")
                                             font.pixelSize: Theme.fontSizeSmall
                                             color: Theme.surfaceVariantText
                                             wrapMode: Text.WordWrap

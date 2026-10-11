@@ -26,6 +26,10 @@ in-app when the plugin offers its own update.
   settings and About pages scroll the way the rest of the shell does too,
   and show a scrollbar.
 
+- **Right-clicking the bar pill opens the window.** Whatever a left click
+  is set to do, a right click always opens the full window; the setting
+  "Bar click opens window" says so.
+
 - **The bar's popout lists plugin and Homebrew updates.** They were counted
   — the pill and the popout's header said "1 update ready" — but not
   listed, so with only a plugin update pending the popout showed that

@@ -99,7 +99,7 @@
     "Confirm before updating": "Bevestigen vóór bijwerken",
     "Require a second click on Update All before the run starts.": "Vereis een tweede klik op Alles bijwerken voordat de run start.",
     "Bar click opens window": "Balkklik opent venster",
-    "Open this window instead of the compact popout when clicking the bar pill.": "Open dit venster in plaats van de compacte popout bij klikken op de balkwidget.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "Open dit venster in plaats van de compacte popout bij een klik op de pill in de bar. Rechtsklikken opent altijd het venster.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "Open het zelfstandige venster in plaats van de compacte popout bij klikken op de balkwidget.",
     "Off": "Uit",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "Controle-interval en genegeerde pakketten beheer je in DMS-instellingen → Systeemupdater.",

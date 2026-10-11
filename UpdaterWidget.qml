@@ -1589,6 +1589,11 @@ PluginComponent {
 
     pillClickAction: root.pillOpensWindow ? (() => root.activatePill()) : null
 
+    // Right-click opens the window whatever a left click does: the popout
+    // and the window are a click apart either way. DMS never calls this on
+    // hover, so it can bring the window forward rather than only show it.
+    pillRightClickAction: () => updaterWindow.activate()
+
     // ── Bar pills ────────────────────────────────────────────────────────────
     readonly property bool _busy: SystemUpdateService.isChecking || engine.running
     readonly property string _pillText: {

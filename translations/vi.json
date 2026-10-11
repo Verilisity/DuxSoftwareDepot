@@ -100,7 +100,7 @@
     "Confirm before updating": "Xác nhận trước khi cập nhật",
     "Require a second click on Update All before the run starts.": "Yêu cầu nhấn “Cập nhật tất cả” lần thứ hai trước khi bắt đầu.",
     "Bar click opens window": "Nhấn trên thanh sẽ mở cửa sổ",
-    "Open this window instead of the compact popout when clicking the bar pill.": "Mở cửa sổ này thay cho bảng nhỏ khi nhấn chỉ báo trên thanh.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "Mở cửa sổ này thay cho bảng nhỏ gọn khi nhấp vào thanh. Nhấp chuột phải luôn mở cửa sổ.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "Mở cửa sổ cập nhật riêng thay cho bảng nhỏ khi nhấn chỉ báo trên thanh.",
     "Off": "Tắt",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "Chu kỳ kiểm tra và các gói bỏ qua được quản lý trong DMS: Cài đặt → Cập nhật hệ thống.",

@@ -100,7 +100,7 @@
     "Confirm before updating": "Megerősítés frissítés előtt",
     "Require a second click on Update All before the run starts.": "Az „Összes frissítése” gomb második kattintást kérjen az indítás előtt.",
     "Bar click opens window": "A sávra kattintás ablakot nyit",
-    "Open this window instead of the compact popout when clicking the bar pill.": "A sávjelzőre kattintva ez az ablak nyíljon meg a kompakt felugró helyett.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "A sávra kattintva ez az ablak nyílik meg a kompakt felugró helyett. Jobb kattintással mindig az ablak nyílik meg.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "A sávjelzőre kattintva az önálló frissítőablak nyíljon meg a kompakt felugró helyett.",
     "Off": "Ki",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "Az ellenőrzési időköz és a mellőzött csomagok a DMS Beállítások → Rendszerfrissítő alatt állíthatók.",

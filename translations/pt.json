@@ -100,7 +100,7 @@
     "Confirm before updating": "Confirmar antes de atualizar",
     "Require a second click on Update All before the run starts.": "Exige um segundo clique em Atualizar tudo antes de iniciar a execução.",
     "Bar click opens window": "Clique na barra abre a janela",
-    "Open this window instead of the compact popout when clicking the bar pill.": "Abre esta janela em vez do painel compacto ao clicar no indicador da barra.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "Abrir esta janela em vez do painel compacto ao clicar na barra. O clique direito abre sempre a janela.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "Abre a janela de atualizações em vez do painel compacto ao clicar no indicador da barra.",
     "Off": "Desligado",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "O intervalo de verificação e os pacotes ignorados são gerenciados em Configurações do DMS → System Updater.",

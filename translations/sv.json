@@ -100,7 +100,7 @@
     "Confirm before updating": "Bekräfta före uppdatering",
     "Require a second click on Update All before the run starts.": "Kräv ett andra klick på Uppdatera alla innan körningen startar.",
     "Bar click opens window": "Panelklick öppnar fönstret",
-    "Open this window instead of the compact popout when clicking the bar pill.": "Öppna det här fönstret i stället för den kompakta popouten vid klick på panelknappen.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "Öppna det här fönstret i stället för den kompakta popupen vid klick i fältet. Högerklick öppnar alltid fönstret.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "Öppna det fristående uppdateringsfönstret i stället för den kompakta popouten vid klick på panelknappen.",
     "Off": "Av",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "Kontrollintervall och ignorerade paket hanteras i DMS-inställningar → System Updater.",

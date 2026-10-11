@@ -100,7 +100,7 @@
     "Confirm before updating": "更新前确认",
     "Require a second click on Update All before the run starts.": "开始运行前需要再次点击“全部更新”。",
     "Bar click opens window": "点击栏指示器打开窗口",
-    "Open this window instead of the compact popout when clicking the bar pill.": "点击栏上的指示器时打开此窗口，而不是紧凑弹出面板。",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "点击栏上的图标时打开此窗口，而不是紧凑弹出面板。右键单击始终打开窗口。",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "点击栏上的指示器时打开独立的更新程序窗口，而不是紧凑弹出面板。",
     "Off": "关闭",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "检查间隔和忽略的软件包在 DMS 设置 → System Updater 中管理。",

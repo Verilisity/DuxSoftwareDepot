@@ -100,7 +100,7 @@
     "Confirm before updating": "업데이트 전에 확인",
     "Require a second click on Update All before the run starts.": "실행 전에 ‘모두 업데이트’를 한 번 더 누르도록 합니다.",
     "Bar click opens window": "막대 클릭 시 창 열기",
-    "Open this window instead of the compact popout when clicking the bar pill.": "막대를 누를 때 간단한 팝업 대신 이 창을 엽니다.",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "바의 알약을 클릭하면 간단한 팝아웃 대신 이 창을 엽니다. 오른쪽 클릭은 항상 창을 엽니다.",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "막대를 누를 때 간단한 팝업 대신 별도의 업데이트 창을 엽니다.",
     "Off": "끔",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "확인 주기와 무시할 패키지는 DMS 설정 → 시스템 업데이트에서 관리합니다.",

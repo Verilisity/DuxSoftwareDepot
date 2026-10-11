@@ -100,7 +100,7 @@
     "Confirm before updating": "更新前に確認する",
     "Require a second click on Update All before the run starts.": "実行開始前に「すべて更新」をもう一度クリックさせます。",
     "Bar click opens window": "バーのクリックでウィンドウを開く",
-    "Open this window instead of the compact popout when clicking the bar pill.": "バーをクリックしたとき、コンパクトなポップアウトの代わりにこのウィンドウを開きます。",
+    "Open this window instead of the compact popout when clicking the bar pill. Right-click always opens the window.": "バーのピルをクリックしたとき、コンパクトなポップアウトの代わりにこのウィンドウを開きます。右クリックでは常にウィンドウが開きます。",
     "Open the standalone updater window instead of the compact popout when clicking the bar pill.": "バーをクリックしたとき、コンパクトなポップアウトの代わりに独立した更新ウィンドウを開きます。",
     "Off": "オフ",
     "Check interval and ignored packages are managed in DMS Settings → System Updater.": "確認間隔と無視するパッケージは DMS の 設定 → システム更新 で管理します。",
