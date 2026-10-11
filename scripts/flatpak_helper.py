@@ -341,31 +341,79 @@ def run_install(remote, appid):
     sys.exit(0 if not runner.failed else 1)
 
 
+def _app_runtime(ref):
+    """The runtime an installed app runs on, as "id/arch/branch"."""
+    try:
+        data = ref.load_metadata(None).get_data()
+    except Exception:
+        return ""
+    for line in bytes(data).decode("utf-8", "replace").splitlines():
+        if line.startswith("runtime="):
+            return line[len("runtime="):].strip()
+    return ""
+
+
 def run_eol_check():
-    """List installed refs marked end-of-life (or eol-rebased) by their remote."""
-    import json as jsonmod
-    out = []
+    """Installed refs their remote marks end-of-life (or eol-rebased), one
+    entry per thing a person would recognise.
+
+    Flathub marks a runtime branch end-of-life together with every extension
+    of it, so a single old Freedesktop Platform arrived as five names — Mesa,
+    Mesa (Extra), the Locale, the VAAPI driver and the Platform — with no
+    version, which reads as if Mesa itself were dead. An extension of a
+    runtime that is listed too is folded into it, a runtime installed both
+    system-wide and per user is listed once, and each runtime says which apps
+    still run on it: that is what keeps it installed, and what has to move
+    before it can go.
+    """
+    found = {}
+    users = {}
     for installation in (Flatpak.Installation.new_system(None), Flatpak.Installation.new_user(None)):
         try:
             refs = installation.list_installed_refs(None)
         except Exception:
             continue
         for ref in refs:
+            is_app = ref.get_kind() == Flatpak.RefKind.APP
+            name = ref.get_appdata_name() or ref.get_name()
+            if is_app:
+                runtime = _app_runtime(ref)
+                if runtime:
+                    users.setdefault(runtime, set()).add(name)
             try:
                 eol = ref.get_eol()
                 rebase = ref.get_eol_rebase()
             except Exception:
                 continue
-            if eol or rebase:
-                out.append({
-                    "ref": ref.format_ref(),
-                    "id": ref.get_name(),
-                    "kind": "app" if ref.get_kind() == Flatpak.RefKind.APP else "runtime",
-                    "appName": ref.get_appdata_name() or ref.get_name(),
-                    "eol": eol or "",
-                    "eolRebase": rebase or "",
-                })
-    print(jsonmod.dumps(out), flush=True)
+            if not (eol or rebase) or ref.format_ref() in found:
+                continue
+            found[ref.format_ref()] = {
+                "ref": ref.format_ref(),
+                "id": ref.get_name(),
+                "branch": ref.get_branch(),
+                "kind": "app" if is_app else "runtime",
+                "appName": name,
+                "eol": eol or "",
+                "eolRebase": rebase or "",
+                "extensions": [],
+                "usedBy": [],
+            }
+    entries = sorted(found.values(), key=lambda e: (e["id"], e["branch"]))
+    out = []
+    for entry in entries:
+        parent = next((p for p in entries
+                       if p is not entry and p["kind"] == "runtime"
+                       and entry["kind"] == "runtime"
+                       and entry["id"].startswith(p["id"] + ".")
+                       and entry["branch"].startswith(p["branch"])), None)
+        if parent:
+            parent["extensions"].append(entry["appName"])
+            continue
+        if entry["kind"] == "runtime":
+            arch = entry["ref"].split("/")[2] if entry["ref"].count("/") >= 3 else ""
+            entry["usedBy"] = sorted(users.get(f"{entry['id']}/{arch}/{entry['branch']}", ()))
+        out.append(entry)
+    print(json.dumps(out), flush=True)
 
 
 def main():

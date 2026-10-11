@@ -35,6 +35,14 @@ in-app when the plugin offers its own update.
   changed: if it matches the latest release, that release counts as
   installed.
 
+- **An outdated Flatpak runtime is named once, with its version.** When
+  Flathub stops maintaining a runtime version, it marks every extension of
+  it too, and the Updates tab listed them all by name: "Mesa, Mesa (Extra),
+  org.freedesktop.Platform.Locale, Intel VAAPI driver, Freedesktop
+  Platform" — as if Mesa itself were no longer maintained. It now says
+  "Freedesktop Platform 24.08 is no longer maintained", names the apps that
+  still use it, and says so when none do.
+
 ## 1.5.0 — 2026-10-09
 
 - **A BIOS update that needs the power adapter says so.** On battery

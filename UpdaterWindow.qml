@@ -4413,7 +4413,20 @@ FloatingWindow {
 
                 StyledText {
                     Layout.fillWidth: true
-                    text: Tr.t("No longer maintained (end-of-life): %1").arg(((win.widgetRoot ? win.widgetRoot.eolRefs : []) || []).map(r => r.appName || r.id).join(", "))
+                    // One sentence per runtime or app, with its version: a
+                    // runtime's extensions (Mesa, the VAAPI driver, its
+                    // Locale) arrive folded into it, and the apps that still
+                    // run on it are what keep it here.
+                    text: ((win.widgetRoot ? win.widgetRoot.eolRefs : []) || []).map(r => {
+                        const name = r.kind === "runtime" && r.branch ? (r.appName || r.id) + " " + r.branch : (r.appName || r.id);
+                        if (r.eolRebase)
+                            return Tr.t("%1 is no longer maintained; its successor is %2.").arg(name).arg(r.eolRebase.split("/")[1] || r.eolRebase);
+                        if (r.kind !== "runtime")
+                            return Tr.t("%1 is no longer maintained.").arg(name);
+                        if ((r.usedBy || []).length > 0)
+                            return Tr.t("%1 is no longer maintained. Still used by %2, until it moves to a newer version.").arg(name).arg(r.usedBy.join(", "));
+                        return Tr.t("%1 is no longer maintained, and no installed app uses it any more.").arg(name);
+                    }).join("\n")
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceText
                     wrapMode: Text.WordWrap

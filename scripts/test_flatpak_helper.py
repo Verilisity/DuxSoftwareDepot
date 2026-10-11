@@ -178,6 +178,49 @@ class _Installation:
     def list_remote_refs_sync(self, remote, cancellable):
         return []
 
+    def list_installed_refs(self, cancellable):
+        return [_InstalledRef(r) for r in SCENARIO.get("installed", {}).get(self.label, [])]
+
+
+class _Bytes:
+    def __init__(self, data):
+        self._data = data
+
+    def get_data(self):
+        return self._data
+
+
+class _InstalledRef:
+    """An installed ref as the eol check reads it: kind/name/arch/branch."""
+    def __init__(self, spec):
+        self._spec = spec
+        self._kind, self._name, self._arch, self._branch = spec["ref"].split("/")
+
+    def get_kind(self):
+        return 0 if self._kind == "app" else 1
+
+    def get_name(self):
+        return self._name
+
+    def get_branch(self):
+        return self._branch
+
+    def format_ref(self):
+        return self._spec["ref"]
+
+    def get_appdata_name(self):
+        return self._spec.get("name")
+
+    def get_eol(self):
+        return self._spec.get("eol")
+
+    def get_eol_rebase(self):
+        return self._spec.get("rebase")
+
+    def load_metadata(self, cancellable):
+        runtime = self._spec.get("runtime")
+        return _Bytes(("[Application]\\nruntime=%s\\n" % runtime).encode() if runtime else b"")
+
 
 class _Flatpak:
     Transaction = _Transaction
@@ -197,6 +240,7 @@ class _Flatpak:
 
     class RefKind:
         APP = 0
+        RUNTIME = 1
 
     @staticmethod
     def get_default_arch():
@@ -357,6 +401,47 @@ def main():
     err = ([e for e in events if e.get("event") == "error"] or [{}])[0]
     ok &= check("and with no flatpak at all there is nothing to ask for",
                 err.get("cause") == "absent", json.dumps(err))
+
+    # An old runtime branch: Flathub marks it and every extension of it, and
+    # the window listed "Mesa, Mesa (Extra), ..." as if Mesa itself were dead.
+    old = "org.freedesktop.Platform 24.08 is no longer receiving fixes"
+    eol_case = {"installed": {
+        "system": [
+            {"ref": "runtime/org.freedesktop.Platform/x86_64/24.08", "name": "Freedesktop Platform", "eol": old},
+            {"ref": "runtime/org.freedesktop.Platform.GL.default/x86_64/24.08", "name": "Mesa", "eol": old},
+            {"ref": "runtime/org.freedesktop.Platform.GL.default/x86_64/24.08extra", "name": "Mesa (Extra)", "eol": old},
+            {"ref": "runtime/org.freedesktop.Platform.Locale/x86_64/24.08", "eol": old},
+            {"ref": "runtime/org.freedesktop.Platform/x86_64/25.08", "name": "Freedesktop Platform"},
+            {"ref": "app/com.dec05eba.gpu_screen_recorder/x86_64/stable", "name": "GPU Screen Recorder",
+             "runtime": "org.freedesktop.Platform/x86_64/24.08"},
+            {"ref": "app/org.example.Fresh/x86_64/stable", "name": "Fresh",
+             "runtime": "org.freedesktop.Platform/x86_64/25.08"},
+            {"ref": "app/org.example.Old/x86_64/stable", "name": "Old", "rebase": "app/org.example.New/x86_64/stable"},
+        ],
+        "user": [
+            {"ref": "runtime/org.freedesktop.Platform/x86_64/24.08", "name": "Freedesktop Platform", "eol": old},
+            {"ref": "runtime/org.gnome.Platform/x86_64/46", "name": "GNOME Platform", "eol": "gone"},
+        ],
+    }}
+    _, _, proc = run(eol_case, "eol")
+    try:
+        eol = {e["ref"]: e for e in json.loads(proc.stdout)}
+    except ValueError:
+        eol = {}
+    fdo = eol.get("runtime/org.freedesktop.Platform/x86_64/24.08", {})
+    ok &= check("an end-of-life runtime and its extensions are one entry",
+                sorted(eol) == ["app/org.example.Old/x86_64/stable",
+                                "runtime/org.freedesktop.Platform/x86_64/24.08",
+                                "runtime/org.gnome.Platform/x86_64/46"], proc.stdout + proc.stderr)
+    ok &= check("which carries its branch and names the extensions",
+                fdo.get("branch") == "24.08" and len(fdo.get("extensions", [])) == 3, json.dumps(fdo))
+    ok &= check("and the app still running on it, not the one on the newer branch",
+                fdo.get("usedBy") == ["GPU Screen Recorder"], json.dumps(fdo))
+    ok &= check("a runtime no app uses says so",
+                eol.get("runtime/org.gnome.Platform/x86_64/46", {}).get("usedBy") == [], proc.stdout)
+    ok &= check("an app with a successor keeps it",
+                eol.get("app/org.example.Old/x86_64/stable", {}).get("eolRebase", "").startswith("app/org.example.New"),
+                proc.stdout)
 
     print("\n" + ("all checks passed" if ok else "FAILURES"))
     return 0 if ok else 1
