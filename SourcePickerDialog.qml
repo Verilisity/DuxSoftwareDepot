@@ -160,8 +160,6 @@ Item {
         implicitHeight: cardColumn.implicitHeight + Theme.spacingL * 2
         radius: Theme.cornerRadius
         color: Ui.cardSurface
-        border.width: 1
-        border.color: Theme.withAlpha(Theme.surfaceVariantText, 0.25)
 
         MouseArea {
             anchors.fill: parent

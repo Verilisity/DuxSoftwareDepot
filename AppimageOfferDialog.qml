@@ -175,7 +175,6 @@ Item {
         height: sheetColumn.implicitHeight + Theme.spacingL * 2
         radius: Theme.cornerRadius + 4
         color: Ui.cardSurface
-        border.width: 1
 
         scale: dialog.animActive ? 1.0 : 0.94
         opacity: dialog.animActive ? 1.0 : 0.0
@@ -279,9 +278,7 @@ Item {
                 visible: dialog.inspecting || dialog.info !== null || dialog.failed
                 implicitHeight: infoRow.implicitHeight + Theme.spacingM * 2
                 radius: Theme.cornerRadius
-                color: Theme.withAlpha(Theme.surface, 0.5)
-                border.color: dialog.failed ? Theme.withAlpha(Theme.error, 0.3) : Theme.withAlpha(Theme.outline, 0.1)
-                border.width: 1
+                color: dialog.failed ? Theme.withAlpha(Theme.error, 0.12) : Theme.withAlpha(Theme.surface, 0.5)
 
                 RowLayout {
                     id: infoRow
@@ -359,37 +356,26 @@ Item {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.topMargin: Theme.spacingXS
-                spacing: 0
+                spacing: Theme.spacingS
 
                 Item {
                     Layout.fillWidth: true
                 }
 
-                // Paired button group matching AppDetailsDialog:
-                // Left button (Cancel): outer left rounded (Theme.cornerRadius), inner right flat (4)
-                // Right button (Install/Replace): inner left flat (4), outer right rounded (Theme.cornerRadius)
-                // On hover: all 4 corners expand dynamically to pill shape (height / 2)!
+                // Two separate actions, not a connected group: Cancel is
+                // tonal, Install the one filled button. Pressing turns a
+                // button into a pill (Ui.buttonFill has the emphasis rules).
                 Rectangle {
                     id: cancelBtn
                     width: cancelRow.implicitWidth + 24
                     height: 32
                     property bool isHovered: cancelMa.containsMouse
 
-                    topLeftRadius: cancelMa.pressed ? (height / 2) : Theme.cornerRadius
-                    bottomLeftRadius: cancelMa.pressed ? (height / 2) : Theme.cornerRadius
-                    topRightRadius: cancelMa.pressed ? (height / 2) : 4
-                    bottomRightRadius: cancelMa.pressed ? (height / 2) : 4
+                    radius: cancelMa.pressed ? (height / 2) : Theme.cornerRadius
+                    Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                    Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                    Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                    Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                    Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                    color: isHovered ? Theme.withAlpha(Ui.chipSurfaceNested, 0.95) : Theme.withAlpha(Ui.chipSurfaceNested, 0.6)
+                    color: Ui.buttonFill("tonal", isHovered)
                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                    border.width: 1
-                    border.color: isHovered ? Theme.primarySelected : Theme.primaryHover
-                    Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                     scale: cancelMa.pressed ? 0.94 : 1.0
                     Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -397,8 +383,8 @@ Item {
                     DankRipple {
                         id: cancelRip
                         anchors.fill: parent
-                        cornerRadius: parent.topLeftRadius
-                        rippleColor: Theme.surfaceText
+                        cornerRadius: parent.radius
+                        rippleColor: Ui.buttonInk("tonal")
                     }
 
                     RowLayout {
@@ -409,14 +395,14 @@ Item {
                         DankIcon {
                             name: "close"
                             size: 14
-                            color: Theme.surfaceText
+                            color: Ui.buttonInk("tonal")
                         }
 
                         StyledText {
                             text: Tr.t("Cancel")
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
-                            color: Theme.surfaceText
+                            color: Ui.buttonInk("tonal")
                         }
                     }
 
@@ -437,21 +423,11 @@ Item {
                     height: 32
                     property bool isHovered: acceptMa.containsMouse && btnEnabled
 
-                    topLeftRadius: acceptMa.pressed ? (height / 2) : 4
-                    bottomLeftRadius: acceptMa.pressed ? (height / 2) : 4
-                    topRightRadius: acceptMa.pressed ? (height / 2) : Theme.cornerRadius
-                    bottomRightRadius: acceptMa.pressed ? (height / 2) : Theme.cornerRadius
+                    radius: acceptMa.pressed ? (height / 2) : Theme.cornerRadius
+                    Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                    Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                    Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                    Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                    Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                    color: isHovered ? Theme.withAlpha(Theme.primary, 0.25) : Theme.withAlpha(Theme.primary, 0.15)
+                    color: Ui.buttonFill("filled", isHovered)
                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                    border.width: 1
-                    border.color: isHovered ? Theme.primary : Theme.primarySelected
-                    Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                     scale: acceptMa.pressed ? 0.94 : 1.0
                     opacity: btnEnabled ? 1.0 : 0.5
@@ -461,8 +437,8 @@ Item {
                     DankRipple {
                         id: acceptRip
                         anchors.fill: parent
-                        cornerRadius: parent.topRightRadius
-                        rippleColor: Theme.primary
+                        cornerRadius: parent.radius
+                        rippleColor: Ui.buttonInk("filled")
                     }
 
                     RowLayout {
@@ -473,14 +449,14 @@ Item {
                         DankIcon {
                             name: dialog.installedMatch ? "sync" : "download"
                             size: 14
-                            color: Theme.primary
+                            color: Ui.buttonInk("filled")
                         }
 
                         StyledText {
                             text: dialog.installedMatch ? Tr.t("Replace") : Tr.t("Install")
                             font.pixelSize: Theme.fontSizeSmall
                             font.weight: Font.Medium
-                            color: Theme.primary
+                            color: Ui.buttonInk("filled")
                         }
                     }
 

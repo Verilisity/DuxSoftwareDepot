@@ -90,11 +90,9 @@ PluginSettings {
                 radius: openMa.pressed ? (height / 2) : Theme.cornerRadius
                 Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                color: isHovered ? Theme.withAlpha(Theme.primary, 0.25) : Theme.withAlpha(Theme.primary, 0.15)
+                // The page's only action: filled (Ui.buttonFill)
+                color: Ui.buttonFill("filled", isHovered)
                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                border.width: 1
-                border.color: isHovered ? Theme.primary : Theme.primarySelected
-                Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                 scale: openMa.pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -103,7 +101,7 @@ PluginSettings {
                     id: openRip
                     anchors.fill: parent
                     cornerRadius: parent.radius
-                    rippleColor: Theme.primary
+                    rippleColor: Ui.buttonInk("filled")
                 }
 
                 RowLayout {
@@ -114,14 +112,14 @@ PluginSettings {
                     DankIcon {
                         name: "open_in_new"
                         size: 16
-                        color: Theme.primary
+                        color: Ui.buttonInk("filled")
                     }
 
                     StyledText {
                         text: Tr.t("Open Dank Software Depot")
                         font.pixelSize: Theme.fontSizeSmall
                         font.weight: Font.Medium
-                        color: Theme.primary
+                        color: Ui.buttonInk("filled")
                     }
                 }
 

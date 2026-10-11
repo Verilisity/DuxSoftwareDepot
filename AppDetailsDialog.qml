@@ -782,17 +782,14 @@ Item {
                     Layout.preferredHeight: 32
                     radius: closeBtnMa.pressed ? (height / 2) : Theme.cornerRadius
                     Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                    color: closeBtnMa.containsMouse ? Theme.withAlpha(Theme.error, 0.15) : Theme.withAlpha(Ui.chipSurfaceNested, 0.6)
+                    color: closeBtnMa.containsMouse ? Theme.withAlpha(Theme.error, 0.12) : Ui.buttonFill("icon", false)
                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                    border.width: 1
-                    border.color: closeBtnMa.containsMouse ? Theme.error : Theme.primaryHover
-                    Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                     DankIcon {
                         anchors.centerIn: parent
                         name: "close"
                         size: 16
-                        color: closeBtnMa.containsMouse ? Theme.error : Theme.surfaceVariantText
+                        color: closeBtnMa.containsMouse ? Ui.failColor : Ui.buttonInk("icon")
                     }
 
                     MouseArea {
@@ -1062,8 +1059,6 @@ Item {
                                     visible: shotsFlickable.contentWidth > shotsFlickable.width && shotsFlickable.contentX > 5
                                     opacity: visible ? (leftShotMa.containsMouse ? 1.0 : 0.85) : 0.0
                                     color: Theme.withAlpha(Ui.chipSurfaceNested, 0.95)
-                                    border.color: leftShotMa.containsMouse ? Theme.primary : Theme.primarySelected
-                                    border.width: 1
 
                                     Behavior on opacity { NumberAnimation { duration: Theme.mediumDuration } }
                                     Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutCubic } }
@@ -1103,8 +1098,6 @@ Item {
                                     visible: shotsFlickable.contentWidth > shotsFlickable.width && (shotsFlickable.contentX < shotsFlickable.contentWidth - shotsFlickable.width - 5)
                                     opacity: visible ? (rightShotMa.containsMouse ? 1.0 : 0.85) : 0.0
                                     color: Theme.withAlpha(Ui.chipSurfaceNested, 0.95)
-                                    border.color: rightShotMa.containsMouse ? Theme.primary : Theme.primarySelected
-                                    border.width: 1
 
                                     Behavior on opacity { NumberAnimation { duration: Theme.mediumDuration } }
                                     Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutCubic } }
@@ -1235,11 +1228,8 @@ Item {
                                     implicitWidth: readMoreRow.implicitWidth + 24
                                     implicitHeight: 28
                                     radius: height / 2
-                                    color: readMoreMa.containsMouse ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                                    color: Ui.buttonFill("text", readMoreMa.containsMouse)
                                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                    border.width: 1
-                                    border.color: readMoreMa.containsMouse ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                                    Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                     RowLayout {
                                         id: readMoreRow
@@ -1513,7 +1503,6 @@ Item {
                         visible: dialog.permissionTokens.length > 0
                         radius: Theme.cornerRadius
                         color: Theme.withAlpha(Ui.chipSurface, 0.45)
-                        border.width: 1
 
                         ColumnLayout {
                             id: permsCardCol
@@ -1595,10 +1584,6 @@ Item {
                                             color: (modelData === "devices:all" || modelData === "fs:host" || modelData === "fs:host:ro")
                                                 ? Theme.withAlpha(Theme.warning, 0.15)
                                                 : Theme.withAlpha(Ui.chipSurfaceNested, 0.8)
-                                            border.width: 1
-                                            border.color: (modelData === "devices:all" || modelData === "fs:host" || modelData === "fs:host:ro")
-                                                ? Theme.withAlpha(Theme.warning, 0.35)
-                                                : Theme.primaryHover
 
                                             RowLayout {
                                                 id: permChipRow
@@ -1635,11 +1620,8 @@ Item {
                                     implicitWidth: permToggleRow.implicitWidth + 24
                                     implicitHeight: 28
                                     radius: height / 2
-                                    color: permToggleMa.containsMouse ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                                    color: Ui.buttonFill("text", permToggleMa.containsMouse)
                                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                    border.width: 1
-                                    border.color: permToggleMa.containsMouse ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                                    Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                     RowLayout {
                                         id: permToggleRow
@@ -1744,7 +1726,6 @@ Item {
                         visible: dialog.releases.length > 0
                         radius: Theme.cornerRadius
                         color: Theme.withAlpha(Ui.chipSurface, 0.45)
-                        border.width: 1
 
                         ColumnLayout {
                             id: relCol
@@ -1826,7 +1807,6 @@ Item {
                         visible: dialog.gitNotesLoading || dialog.gitReleases.length > 0 || dialog.gitNotesKind === "untouched"
                         radius: Theme.cornerRadius
                         color: Theme.withAlpha(Ui.chipSurface, 0.45)
-                        border.width: 1
 
                         ColumnLayout {
                             id: gitNotesCol
@@ -2077,8 +2057,8 @@ Item {
                                         iconName: "history"
                                         iconSize: 13
                                         text: Tr.t("Restore %1").arg(modelData.label)
-                                        backgroundColor: Ui.chipSurfaceNested
-                                        textColor: Theme.surfaceText
+                                        backgroundColor: Ui.buttonFill("tonal", false)
+                                        textColor: Ui.buttonInk("tonal")
                                         enabled: !dialog.busy
                                         onClicked: dialog.restoreRequested(modelData.payload)
                                     }
@@ -2139,9 +2119,8 @@ Item {
                                     Layout.preferredWidth: writeRevContent.implicitWidth + 24
                                     Layout.preferredHeight: 28
                                     radius: 14
-                                    color: writeRevMa.containsMouse ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
-                                    border.width: 1
-                                    border.color: writeRevMa.containsMouse ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
+                                    color: Ui.buttonFill("tonal", writeRevMa.containsMouse)
+                                    Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                     RowLayout {
                                         id: writeRevContent
@@ -2151,14 +2130,14 @@ Item {
                                         DankIcon {
                                             name: "rate_review"
                                             size: 14
-                                            color: Theme.primary
+                                            color: Ui.buttonInk("tonal")
                                         }
 
                                         StyledText {
                                             text: Tr.t("Write a review")
                                             font.pixelSize: Theme.fontSizeSmall - 1
                                             font.weight: Font.Medium
-                                            color: Theme.primary
+                                            color: Ui.buttonInk("tonal")
                                         }
                                     }
 
@@ -2190,7 +2169,6 @@ Item {
                                     implicitHeight: reviewForm.implicitHeight + Theme.spacingM * 2
                                     radius: Theme.cornerRadius
                                     color: Theme.withAlpha(Ui.chipSurfaceNested, 0.6)
-                                    border.width: 1
 
                                     ColumnLayout {
                                         id: reviewForm
@@ -2272,6 +2250,8 @@ Item {
                                                 iconName: "close"
                                                 iconSize: 14
                                                 text: Tr.t("Cancel")
+                                                backgroundColor: Ui.buttonFill("tonal", false)
+                                                textColor: Ui.buttonInk("tonal")
                                                 onClicked: dialog.reviewFormOpen = false
                                             }
 
@@ -2281,8 +2261,8 @@ Item {
                                                 iconName: "send"
                                                 iconSize: 14
                                                 text: Tr.t("Submit")
-                                                backgroundColor: Theme.primary
-                                                textColor: Theme.primaryText
+                                                backgroundColor: Theme.buttonBg
+                                                textColor: Theme.buttonText
                                                 enabled: (reviewSummaryField.text || "").trim() !== "" && dialog.reviewStatus !== "submitting"
                                                 onClicked: dialog.submitReview(reviewSummaryField.text, reviewBodyField.text, reviewAuthorField.text)
                                             }
@@ -2420,11 +2400,8 @@ Item {
                                         implicitWidth: rev10MoreRow.implicitWidth + 24
                                         implicitHeight: 28
                                         radius: height / 2
-                                        color: rev10MoreMa.containsMouse ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                                        color: Ui.buttonFill("text", rev10MoreMa.containsMouse)
                                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                        border.width: 1
-                                        border.color: rev10MoreMa.containsMouse ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                         RowLayout {
                                             id: rev10MoreRow
@@ -2460,11 +2437,8 @@ Item {
                                         implicitWidth: revAllRow.implicitWidth + 24
                                         implicitHeight: 28
                                         radius: height / 2
-                                        color: revAllMa.containsMouse ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                                        color: Ui.buttonFill("text", revAllMa.containsMouse)
                                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                        border.width: 1
-                                        border.color: revAllMa.containsMouse ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                         RowLayout {
                                             id: revAllRow
@@ -2500,11 +2474,8 @@ Item {
                                         implicitWidth: revLessRow.implicitWidth + 24
                                         implicitHeight: 28
                                         radius: height / 2
-                                        color: revLessMa.containsMouse ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                                        color: Ui.buttonFill("text", revLessMa.containsMouse)
                                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                        border.width: 1
-                                        border.color: revLessMa.containsMouse ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                         RowLayout {
                                             id: revLessRow
@@ -2547,7 +2518,6 @@ Item {
                 Layout.fillWidth: true
                 radius: Theme.cornerRadius
                 color: Theme.withAlpha(Ui.chipSurface, 0.45)
-                border.width: 1
                 implicitHeight: footerLayout.implicitHeight + Theme.spacingM * 2
 
                 RowLayout {
@@ -2559,9 +2529,10 @@ Item {
                     anchors.bottomMargin: Theme.spacingS
                     spacing: Theme.spacingS
 
-                    // Left actions (Web & Hold - SteamFriends paired capsule style)
+                    // Left actions: website and hold, two standard icon buttons
+                    // (no container until hovered), not a connected pair
                     Row {
-                        spacing: 2
+                        spacing: Theme.spacingXS
                         visible: !dialog.busy
 
                         // Website Button Container
@@ -2571,23 +2542,12 @@ Item {
                             width: 32
                             height: 32
                             property bool isHovered: webBtnMa.containsMouse
-                            readonly property bool hasSibling: dialog.showHoldToggle
 
-                            topLeftRadius: webBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                            bottomLeftRadius: webBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                            topRightRadius: webBtnMa.pressed ? (height / 2) : (hasSibling ? 4 : Theme.cornerRadius)
-                            bottomRightRadius: webBtnMa.pressed ? (height / 2) : (hasSibling ? 4 : Theme.cornerRadius)
+                            radius: webBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                            Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                            color: isHovered ? Theme.withAlpha(Theme.primary, 0.18) : Theme.withAlpha(Ui.chipSurfaceNested, 0.6)
+                            color: Ui.buttonFill("icon", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isHovered ? Theme.primary : Theme.primaryHover
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                             scale: webBtnMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2595,16 +2555,15 @@ Item {
                             DankRipple {
                                 id: webRip
                                 anchors.fill: parent
-                                cornerRadius: parent.topLeftRadius
-                                rippleColor: Theme.primary
+                                cornerRadius: parent.radius
+                                rippleColor: Ui.buttonInk("icon")
                             }
 
                             DankIcon {
                                 anchors.centerIn: parent
                                 name: "language"
                                 size: 16
-                                color: webBtnRoot.isHovered ? Theme.primary : Theme.surfaceVariantText
-                                Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
+                                color: Ui.buttonInk("icon")
                             }
 
                             MouseArea {
@@ -2624,23 +2583,15 @@ Item {
                             width: 32
                             height: 32
                             property bool isHovered: holdBtnMa.containsMouse
-                            readonly property bool hasSibling: (dialog.appData.homepage || "") !== ""
 
-                            topLeftRadius: holdBtnMa.pressed ? (height / 2) : (hasSibling ? 4 : Theme.cornerRadius)
-                            bottomLeftRadius: holdBtnMa.pressed ? (height / 2) : (hasSibling ? 4 : Theme.cornerRadius)
-                            topRightRadius: holdBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                            bottomRightRadius: holdBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                            radius: holdBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                            Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                            color: isHovered ? (dialog.appData.held === true ? Theme.withAlpha(Theme.warning, 0.25) : Theme.withAlpha(Theme.primary, 0.18)) : (dialog.appData.held === true ? Theme.withAlpha(Theme.warning, 0.15) : Theme.withAlpha(Ui.chipSurfaceNested, 0.6))
+                            // Held is a switched-on state, shown as a warning
+                            // tint rather than the neutral selected fill: an
+                            // app that no longer updates is worth noticing.
+                            color: dialog.appData.held === true ? Theme.withAlpha(Theme.warning, isHovered ? 0.22 : 0.15) : Ui.buttonFill("icon", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isHovered ? (dialog.appData.held === true ? Theme.warning : Theme.primary) : (dialog.appData.held === true ? Theme.withAlpha(Theme.warning, 0.4) : Theme.primaryHover)
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                             scale: holdBtnMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2648,15 +2599,15 @@ Item {
                             DankRipple {
                                 id: holdRip
                                 anchors.fill: parent
-                                cornerRadius: parent.topRightRadius
-                                rippleColor: dialog.appData.held === true ? Theme.warning : Theme.primary
+                                cornerRadius: parent.radius
+                                rippleColor: dialog.appData.held === true ? Theme.warning : Ui.buttonInk("icon")
                             }
 
                             DankIcon {
                                 anchors.centerIn: parent
                                 name: dialog.appData.held === true ? "lock_open" : "lock"
                                 size: 15
-                                color: dialog.appData.held === true ? Theme.warning : (holdBtnRoot.isHovered ? Theme.primary : Theme.surfaceVariantText)
+                                color: dialog.appData.held === true ? Theme.warning : Ui.buttonInk("icon")
                                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
                             }
 
@@ -2681,22 +2632,13 @@ Item {
                         Layout.preferredWidth: pluginBtnRow.implicitWidth + 24
                         Layout.preferredHeight: 32
                         property bool isHovered: pluginBtnMa.containsMouse
+                        readonly property string kind: (dialog.showOpenButton || dialog.showUpdateButton || dialog.showUninstall) ? "tonal" : "filled"
 
-                        topLeftRadius: pluginBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomLeftRadius: pluginBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                        topRightRadius: pluginBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomRightRadius: pluginBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                        radius: pluginBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                        color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                        color: Ui.buttonFill(kind, isHovered)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: pluginBtnMa.pressed ? 0.94 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2704,8 +2646,8 @@ Item {
                         DankRipple {
                             id: pluginRip
                             anchors.fill: parent
-                            cornerRadius: parent.topLeftRadius
-                            rippleColor: Theme.primary
+                            cornerRadius: parent.radius
+                            rippleColor: Ui.buttonInk(pluginBtnRoot.kind)
                         }
 
                         RowLayout {
@@ -2716,14 +2658,14 @@ Item {
                             DankIcon {
                                 name: "open_in_new"
                                 size: 14
-                                color: Theme.primary
+                                color: Ui.buttonInk(pluginBtnRoot.kind)
                             }
 
                             StyledText {
                                 text: Tr.t("Manage plugins")
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Medium
-                                color: Theme.primary
+                                color: Ui.buttonInk(pluginBtnRoot.kind)
                             }
                         }
 
@@ -2747,22 +2689,14 @@ Item {
                         Layout.preferredWidth: openBtnRow.implicitWidth + 24
                         Layout.preferredHeight: 32
                         property bool isHovered: openBtnMa.containsMouse
+                        // The main action is updating when there is one; else opening.
+                        readonly property string kind: dialog.showUpdateButton ? "tonal" : "filled"
 
-                        topLeftRadius: openBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomLeftRadius: openBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                        topRightRadius: openBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomRightRadius: openBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                        radius: openBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                        color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                        color: Ui.buttonFill(kind, isHovered)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: openBtnMa.pressed ? 0.94 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2770,8 +2704,8 @@ Item {
                         DankRipple {
                             id: openRip
                             anchors.fill: parent
-                            cornerRadius: parent.topLeftRadius
-                            rippleColor: Theme.primary
+                            cornerRadius: parent.radius
+                            rippleColor: Ui.buttonInk(openBtnRoot.kind)
                         }
 
                         RowLayout {
@@ -2782,14 +2716,14 @@ Item {
                             DankIcon {
                                 name: "launch"
                                 size: 14
-                                color: Theme.primary
+                                color: Ui.buttonInk(openBtnRoot.kind)
                             }
 
                             StyledText {
                                 text: Tr.t("Open")
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.Medium
-                                color: Theme.primary
+                                color: Ui.buttonInk(openBtnRoot.kind)
                             }
                         }
 
@@ -2835,8 +2769,6 @@ Item {
                         Layout.preferredHeight: 26
                         radius: 13
                         color: Theme.withAlpha(Theme.success, 0.15)
-                        border.width: 1
-                        border.color: Theme.withAlpha(Theme.success, 0.3)
 
                         StyledText {
                             id: installedChipText
@@ -2848,9 +2780,9 @@ Item {
                         }
                     }
 
-                    // Action buttons group (Uninstall, Update, Install - paired capsule style)
+                    // Uninstall, Update, Install: separate buttons, one of them filled
                     Row {
-                        spacing: 2
+                        spacing: Theme.spacingS
                         visible: !dialog.busy
 
                         // Uninstall Button (Custom Danger Button)
@@ -2861,23 +2793,13 @@ Item {
                             height: 32
                             property bool isHovered: uninstBtnMa.containsMouse
                             readonly property bool confirming: dialog._confirmUninstall === (dialog.appData.id || "")
-                            readonly property bool hasRightSibling: dialog.showUpdateButton || (dialog.showInstallButtons && !dialog.installedChipVisible && (dialog.appData.sources || []).length > 0)
+                            readonly property string kind: confirming ? "danger" : "dangerTonal"
 
-                            topLeftRadius: uninstBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                            bottomLeftRadius: uninstBtnMa.pressed ? (height / 2) : Theme.cornerRadius
-                            topRightRadius: uninstBtnMa.pressed ? (height / 2) : (hasRightSibling ? 4 : Theme.cornerRadius)
-                            bottomRightRadius: uninstBtnMa.pressed ? (height / 2) : (hasRightSibling ? 4 : Theme.cornerRadius)
+                            radius: uninstBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                            Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                            color: confirming ? Theme.error : (isHovered ? Theme.withAlpha(Theme.error, 0.18) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5))
+                            color: Ui.buttonFill(kind, isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: confirming ? Theme.error : (isHovered ? Theme.error : Theme.withAlpha(Theme.error, 0.2))
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                             scale: uninstBtnMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2885,8 +2807,8 @@ Item {
                             DankRipple {
                                 id: uninstRip
                                 anchors.fill: parent
-                                cornerRadius: parent.topLeftRadius
-                                rippleColor: Theme.error
+                                cornerRadius: parent.radius
+                                rippleColor: Ui.buttonInk(uninstBtnRoot.kind)
                             }
 
                             RowLayout {
@@ -2897,7 +2819,7 @@ Item {
                                 DankIcon {
                                     name: uninstBtnRoot.confirming ? "delete_forever" : "delete"
                                     size: 14
-                                    color: uninstBtnRoot.confirming ? Ui.onColor(Theme.error) : (uninstBtnRoot.isHovered ? Theme.error : Theme.surfaceText)
+                                    color: Ui.buttonInk(uninstBtnRoot.kind)
                                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
                                 }
 
@@ -2905,7 +2827,7 @@ Item {
                                     text: uninstBtnRoot.confirming ? Tr.t("Confirm uninstall") : Tr.t("Uninstall")
                                     font.pixelSize: Theme.fontSizeSmall
                                     font.weight: Font.Medium
-                                    color: uninstBtnRoot.confirming ? Ui.onColor(Theme.error) : (uninstBtnRoot.isHovered ? Theme.error : Theme.surfaceText)
+                                    color: Ui.buttonInk(uninstBtnRoot.kind)
                                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
                                 }
                             }
@@ -2936,24 +2858,12 @@ Item {
                             width: updateBtnRow.implicitWidth + 24
                             height: 32
                             property bool isHovered: updateBtnMa.containsMouse
-                            readonly property bool hasLeftSibling: dialog.showUninstall
-                            readonly property bool hasRightSibling: dialog.showInstallButtons && !dialog.installedChipVisible && (dialog.appData.sources || []).length > 0
 
-                            topLeftRadius: updateBtnMa.pressed ? (height / 2) : (hasLeftSibling ? 4 : Theme.cornerRadius)
-                            bottomLeftRadius: updateBtnMa.pressed ? (height / 2) : (hasLeftSibling ? 4 : Theme.cornerRadius)
-                            topRightRadius: updateBtnMa.pressed ? (height / 2) : (hasRightSibling ? 4 : Theme.cornerRadius)
-                            bottomRightRadius: updateBtnMa.pressed ? (height / 2) : (hasRightSibling ? 4 : Theme.cornerRadius)
+                            radius: updateBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                            Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                            color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                            color: Ui.buttonFill("filled", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.25)
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                             scale: updateBtnMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2961,8 +2871,8 @@ Item {
                             DankRipple {
                                 id: updateRip
                                 anchors.fill: parent
-                                cornerRadius: parent.topLeftRadius
-                                rippleColor: Theme.primary
+                                cornerRadius: parent.radius
+                                rippleColor: Ui.buttonInk("filled")
                             }
 
                             RowLayout {
@@ -2973,14 +2883,14 @@ Item {
                                 DankIcon {
                                     name: "download"
                                     size: 14
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("filled")
                                 }
 
                                 StyledText {
                                     text: Tr.t("Update")
                                     font.pixelSize: Theme.fontSizeSmall
                                     font.weight: Font.Medium
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("filled")
                                 }
                             }
 
@@ -2995,7 +2905,8 @@ Item {
                             }
                         }
 
-                        // Install Buttons (Custom Action Buttons - paired capsule with dynamic corner morphing)
+                        // Install buttons, one per source: Flathub (else the first
+                        // source) is the filled one, the others tonal
                         Repeater {
                             model: (dialog.showInstallButtons && !dialog.installedChipVisible) ? (dialog.appData.sources || []) : []
 
@@ -3004,33 +2915,18 @@ Item {
                                 required property var modelData
                                 required property int index
 
-                                readonly property int totalSources: (dialog.appData.sources || []).length
-                                readonly property bool isFirstSource: index === 0
-                                readonly property bool isLastSource: index === totalSources - 1
-                                readonly property bool hasLeftSibling: !isFirstSource || dialog.showUninstall || dialog.showUpdateButton
-                                readonly property bool hasRightSibling: !isLastSource
-
                                 property bool isHovered: instBtnMa.containsMouse
-                                readonly property bool isFlathub: modelData.kind === "flatpak"
+                                readonly property bool isRecommended: index === Math.max(0, (dialog.appData.sources || []).findIndex(src => src.kind === "flatpak"))
+                                readonly property string kind: isRecommended ? "filled" : "tonal"
 
                                 width: instBtnRow.implicitWidth + 24
                                 height: 32
 
-                                topLeftRadius: instBtnMa.pressed ? (height / 2) : (hasLeftSibling ? 4 : Theme.cornerRadius)
-                                bottomLeftRadius: instBtnMa.pressed ? (height / 2) : (hasLeftSibling ? 4 : Theme.cornerRadius)
-                                topRightRadius: instBtnMa.pressed ? (height / 2) : (hasRightSibling ? 4 : Theme.cornerRadius)
-                                bottomRightRadius: instBtnMa.pressed ? (height / 2) : (hasRightSibling ? 4 : Theme.cornerRadius)
+                                radius: instBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                                Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                                Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                                color: isHovered ? (isFlathub ? Theme.withAlpha(Theme.primary, 0.25) : Theme.withAlpha(Ui.chipSurfaceNested, 0.9)) : (isFlathub ? Theme.withAlpha(Theme.primary, 0.15) : Theme.withAlpha(Ui.chipSurfaceNested, 0.6))
+                                color: Ui.buttonFill(kind, isHovered)
                                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                border.width: 1
-                                border.color: isHovered ? (isFlathub ? Theme.primary : Theme.primarySelected) : (isFlathub ? Theme.primarySelected : Theme.primaryHover)
-                                Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                 scale: instBtnMa.pressed ? 0.94 : 1.0
                                 Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -3038,8 +2934,8 @@ Item {
                                 DankRipple {
                                     id: instBtnRip
                                     anchors.fill: parent
-                                    cornerRadius: parent.topLeftRadius
-                                    rippleColor: instBtnRoot.isFlathub ? Theme.primary : Theme.surfaceText
+                                    cornerRadius: parent.radius
+                                    rippleColor: Ui.buttonInk(instBtnRoot.kind)
                                 }
 
                                 RowLayout {
@@ -3050,14 +2946,14 @@ Item {
                                     DankIcon {
                                         name: "download"
                                         size: 14
-                                        color: instBtnRoot.isFlathub ? Theme.primary : Theme.surfaceText
+                                        color: Ui.buttonInk(instBtnRoot.kind)
                                     }
 
                                     StyledText {
                                         text: modelData.kind === "flatpak" ? Tr.t("Install from Flathub") : (modelData.kind === "appimage" ? Tr.t("Install AppImage") : Tr.t("Install from %1").arg(modelData.kind === "copr" ? modelData.project : Backend.systemRepoLabel))
                                         font.pixelSize: Theme.fontSizeSmall
                                         font.weight: Font.Medium
-                                        color: instBtnRoot.isFlathub ? Theme.primary : Theme.surfaceText
+                                        color: Ui.buttonInk(instBtnRoot.kind)
                                     }
                                 }
 
@@ -3082,7 +2978,6 @@ Item {
                 visible: dialog.provenance !== null && !dialog.busy
                 radius: Theme.cornerRadius
                 color: Theme.withAlpha(Ui.chipSurface, 0.45)
-                border.width: 1
                 implicitHeight: provInfoCol.implicitHeight + Theme.spacingS * 2
 
                 RowLayout {
@@ -3126,8 +3021,6 @@ Item {
                 visible: dialog.showUninstall && dialog.alsoRemoves.length > 0 && !dialog.busy
                 radius: Theme.cornerRadius
                 color: Theme.withAlpha(Theme.warning, 0.12)
-                border.color: Theme.withAlpha(Theme.warning, 0.3)
-                border.width: 1
                 implicitHeight: alsoRemovesCol.implicitHeight + Theme.spacingS * 2
 
                 RowLayout {

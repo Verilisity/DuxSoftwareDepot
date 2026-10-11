@@ -24,6 +24,97 @@ Item {
     readonly property color chipSurface: Theme.chipSurface !== undefined ? Theme.chipSurface : Theme.surfaceContainerHigh
     readonly property color chipSurfaceNested: Theme.chipSurfaceNested !== undefined ? Theme.chipSurfaceNested : Theme.surfaceContainerHighest
 
+    // ── Button emphasis ─────────────────────────────────────────────────────
+    // Material 3 Expressive draws a button with its fill, not an outline, and
+    // says how important it is by how strong that fill is (issue #28). An
+    // area gets at most one filled button, its main action; everything next
+    // to it is tonal; "show more" kinds of links are text. With that, a row
+    // of buttons no longer turns into a row of equally loud ones, which is
+    // what the outlines were working around.
+    //
+    //   filled       the main action: the shell's button colours, so the
+    //                user's choice in Settings → Theme reaches it
+    //   tonal        a secondary action, on the surface a chip inside a
+    //                card would use
+    //   accent       tonal, but leaning towards the accent: the recommended
+    //                one of several equal choices (Flathub among sources)
+    //   text         lowest emphasis: no fill until hovered
+    //   danger       filled red: a destructive action, once confirmed
+    //   dangerTonal  tonal with red ink: a destructive action, at rest
+    //   warning      filled amber: acting on a warning banner
+    //   icon         a standard icon button: no container
+    //   iconSelected an icon button that is switched on
+    //
+    // Hover is a state layer — the ink over the fill at 8%, as in DankButton
+    // — not a different colour.
+    function buttonFill(kind, hovered) {
+        let fill;
+        switch (kind) {
+        case "filled":
+            fill = Theme.buttonBg;
+            break;
+        case "accent":
+            fill = Theme.primaryContainer;
+            break;
+        case "danger":
+            fill = Theme.error;
+            break;
+        case "warning":
+            fill = Theme.warning;
+            break;
+        case "text":
+        case "icon":
+            fill = Theme.withAlpha(buttonInk(kind), 0);
+            break;
+        case "iconSelected":
+            fill = Theme.secondaryContainer;
+            break;
+        default:
+            fill = chipSurfaceNested;
+        }
+        if (!hovered)
+            return fill;
+        const ink = buttonInk(kind);
+        return fill.a === 0 ? Theme.withAlpha(ink, 0.08) : mix(fill, Qt.rgba(ink.r, ink.g, ink.b, fill.a), 0.08);
+    }
+
+    function buttonInk(kind) {
+        switch (kind) {
+        case "filled":
+            return Theme.buttonText;
+        case "accent":
+        case "text":
+            return Theme.primary;
+        case "danger":
+            return onColor(Theme.error);
+        case "warning":
+            return onColor(Theme.warning);
+        case "dangerTonal":
+            return failColor;
+        case "icon":
+            return Theme.surfaceVariantText;
+        default:
+            return Theme.surfaceText;
+        }
+    }
+
+    // ── List rows ───────────────────────────────────────────────────────────
+    // A row is a surface of its own, like a card, rather than a near-clear
+    // fill held together by an outline. States tint that surface: hover is
+    // the accent at 8%, a selected (open, active) row twice that, and a row
+    // that failed or is already there takes the error or success colour.
+    // `base` is the surface the row has at rest: by default the one the
+    // dashboard's cards use, since the window itself is the card surface.
+    function rowFill(hovered, selected, tone, base) {
+        const surface = base !== undefined ? base : Theme.withAlpha(chipSurface, 0.45);
+        if (tone === "error")
+            return mix(surface, Qt.rgba(Theme.error.r, Theme.error.g, Theme.error.b, surface.a), hovered ? 0.18 : 0.12);
+        if (tone === "success")
+            return mix(surface, Qt.rgba(Theme.success.r, Theme.success.g, Theme.success.b, surface.a), hovered ? 0.20 : 0.12);
+        const strength = (selected ? 0.16 : 0) + (hovered ? 0.08 : 0);
+        return strength === 0 ? surface : mix(surface, Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, surface.a), strength);
+    }
+
     // ── Themed app icons ────────────────────────────────────────────────────
     // On by default. The argument against it is that an app's icon is its own
     // identity and a catalog where every one is the same colour is harder to

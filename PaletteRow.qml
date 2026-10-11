@@ -65,16 +65,11 @@ Item {
         Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
         Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
+        // The row Enter will run is told by its fill alone (issue #28)
         color: isHighlighted
             ? Theme.withAlpha(Theme.primary, slot.selected ? 0.24 : 0.14)
             : Theme.withAlpha(Ui.chipSurface, 0.45)
         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-
-        border.width: 1
-        border.color: isHighlighted
-            ? (slot.selected ? Theme.primary : Theme.withAlpha(Theme.primary, 0.35))
-            : Theme.withAlpha(Theme.primary, 0.08)
-        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
         scale: rowArea.pressed ? 0.98 : (slot.selected ? 1.01 : 1.0)
         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutQuad } }

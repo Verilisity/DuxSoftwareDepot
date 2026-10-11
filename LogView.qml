@@ -612,18 +612,12 @@ Item {
                         property real blrAnim: blr; Behavior on blrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                         property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        property color paintColor: hovered
-                            ? Theme.primaryHover
-                            : Theme.withAlpha(Theme.secondary, 0.04)
-
-                        property color paintBorder: selected
-                            ? Theme.withAlpha(Theme.primary, 0.4)
-                            : Theme.withAlpha(Theme.secondary, 0.15)
+                        property color paintColor: Ui.rowFill(hovered, selected)
 
                         ShapePath {
                             fillColor: entryBg.paintColor
-                            strokeColor: entryBg.paintBorder
-                            strokeWidth: 1
+                            strokeColor: "transparent"
+                            strokeWidth: -1
 
                             startX: entryBg.tlrAnim; startY: 0
                             PathLine { x: entryBg.width - entryBg.trrAnim; y: 0 }

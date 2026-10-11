@@ -1653,18 +1653,12 @@ Item {
                         property real blrAnim: blr; Behavior on blrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                         property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        property color paintColor: hovered
-                            ? Theme.primaryHover
-                            : Theme.withAlpha(Theme.secondary, 0.04)
-
-                        property color paintBorder: selected
-                            ? Theme.withAlpha(Theme.primary, 0.4)
-                            : Theme.withAlpha(Theme.secondary, 0.15)
+                        property color paintColor: Ui.rowFill(hovered, selected)
 
                         ShapePath {
                             fillColor: rowBg.paintColor
-                            strokeColor: rowBg.paintBorder
-                            strokeWidth: 1
+                            strokeColor: "transparent"
+                            strokeWidth: -1
 
                             startX: rowBg.tlrAnim; startY: 0
                             PathLine { x: rowBg.width - rowBg.trrAnim; y: 0 }

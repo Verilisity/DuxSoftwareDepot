@@ -324,18 +324,12 @@ Item {
                         // updatable, which left three different appearances
                         // on one page and made the hover barely a change at
                         // all. The green chip already says which are.
-                        property color paintColor: hovered
-                            ? Theme.primaryHover
-                            : Theme.withAlpha(Theme.secondary, 0.04)
-
-                        property color paintBorder: selected
-                            ? Theme.withAlpha(Theme.primary, 0.4)
-                            : Theme.withAlpha(Theme.secondary, 0.15)
+                        property color paintColor: Ui.rowFill(hovered, selected)
 
                         ShapePath {
                             fillColor: devBg.paintColor
-                            strokeColor: devBg.paintBorder
-                            strokeWidth: 1
+                            strokeColor: "transparent"
+                            strokeWidth: -1
 
                             startX: devBg.tlrAnim; startY: 0
                             PathLine { x: devBg.width - devBg.trrAnim; y: 0 }

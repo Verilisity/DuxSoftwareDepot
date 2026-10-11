@@ -731,11 +731,10 @@ FloatingWindow {
                         radius: setCloseMa.pressed ? (height / 2) : (Theme.cornerRadius / 2)
                         Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                        color: isHovered ? Theme.withAlpha(Theme.error, 0.22) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5)
+                        // A standard icon button: no container until hovered,
+                        // and then a red state layer, since it closes
+                        color: isHovered ? Theme.withAlpha(Theme.error, 0.12) : Ui.buttonFill("icon", false)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: isHovered ? Theme.error : Theme.withAlpha(Theme.error, 0.15)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: setCloseMa.pressed ? 0.92 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -744,14 +743,14 @@ FloatingWindow {
                             id: setCloseRip
                             anchors.fill: parent
                             cornerRadius: parent.radius
-                            rippleColor: Theme.error
+                            rippleColor: Ui.failColor
                         }
 
                         DankIcon {
                             anchors.centerIn: parent
                             name: "close"
                             size: 18
-                            color: settingsCloseBtn.isHovered ? Theme.error : Theme.surfaceVariantText
+                            color: settingsCloseBtn.isHovered ? Ui.failColor : Ui.buttonInk("icon")
                         }
 
                         MouseArea {
@@ -1599,9 +1598,7 @@ FloatingWindow {
                                     visible: Backend.replaying
                                     implicitHeight: simulatingRow.implicitHeight + Theme.spacingM * 2
                                     radius: Theme.cornerRadius
-                                    color: Theme.withAlpha(Theme.secondary, 0.12)
-                                    border.width: 1
-                                    border.color: Theme.withAlpha(Theme.secondary, 0.3)
+                                    color: Theme.withAlpha(Theme.secondary, 0.14)
 
                                     RowLayout {
                                         id: simulatingRow
@@ -1630,8 +1627,8 @@ FloatingWindow {
                                             buttonHeight: 28
                                             horizontalPadding: Theme.spacingM
                                             text: "Stop"
-                                            backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                                            textColor: Theme.buttonText
+                                            backgroundColor: Ui.buttonFill("filled", false)
+                                            textColor: Ui.buttonInk("filled")
                                             onClicked: PluginService.savePluginData("dankSoftwareDepot", "simMode", "")
                                         }
                                     }
@@ -1656,8 +1653,8 @@ FloatingWindow {
                                             buttonHeight: 26
                                             horizontalPadding: Theme.spacingS
                                             text: modelData + "×"
-                                            backgroundColor: Backend.simSpeed === modelData ? Theme.primary : Theme.withAlpha(Theme.buttonBg, 0.9)
-                                            textColor: Backend.simSpeed === modelData ? Theme.primaryText : Theme.buttonText
+                                            backgroundColor: Ui.buttonFill(Backend.simSpeed === modelData ? "filled" : "tonal", false)
+                                            textColor: Ui.buttonInk(Backend.simSpeed === modelData ? "filled" : "tonal")
                                             onClicked: PluginService.savePluginData("dankSoftwareDepot", "simSpeed", modelData)
                                         }
                                     }
@@ -1672,8 +1669,8 @@ FloatingWindow {
                                         iconName: "refresh"
                                         iconSize: 14
                                         text: "Rescan"
-                                        backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                                        textColor: Theme.buttonText
+                                        backgroundColor: Ui.buttonFill("tonal", false)
+                                        textColor: Ui.buttonInk("tonal")
                                         onClicked: Backend.refreshRecordings()
                                     }
                                 }
@@ -1712,8 +1709,8 @@ FloatingWindow {
                                             iconSize: 14
                                             text: "Play"
                                             enabled: !win.engine.running
-                                            backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                                            textColor: Theme.buttonText
+                                            backgroundColor: Ui.buttonFill("tonal", false)
+                                            textColor: Ui.buttonInk("tonal")
                                             onClicked: {
                                                 PluginService.savePluginData("dankSoftwareDepot", "simRecording", modelData.name);
                                                 PluginService.savePluginData("dankSoftwareDepot", "simMode", "replay");
@@ -1833,9 +1830,7 @@ FloatingWindow {
                                         visible: win.selfUpdateVersion !== ""
                                         implicitHeight: aboutUpdateBox.implicitHeight + Theme.spacingM * 2
                                         radius: Theme.cornerRadius
-                                        color: Theme.withAlpha(Theme.primary, 0.10)
-                                        border.width: 1
-                                        border.color: Theme.withAlpha(Theme.primary, 0.30)
+                                        color: Theme.withAlpha(Theme.primary, 0.12)
 
                                         ColumnLayout {
                                             id: aboutUpdateBox
@@ -1862,41 +1857,27 @@ FloatingWindow {
                                                 }
                                             }
 
-                                            // Action buttons row: 1. Changelog button, 2. Update button
+                                            // Two separate actions: the changelog is tonal (accent
+                                            // while open), Update & Reload the one filled button
                                             RowLayout {
                                                 Layout.fillWidth: true
-                                                spacing: 4
+                                                spacing: Theme.spacingS
 
-                                                // 1. Show/Hide Changelog button (Pill morph on hover/expanded)
+                                                // 1. Show/Hide Changelog
                                                 Rectangle {
+                                                    id: logBtn
                                                     Layout.fillWidth: true
                                                     Layout.preferredHeight: 34
                                                     property bool isHov: logBtnMa.containsMouse
-                                                    readonly property bool isFirst: true
-                                                    readonly property bool isLast: false
-                                                    readonly property real outerR: Theme.cornerRadius
-                                                    readonly property real innerR: 4
-                                                    readonly property bool isPill: isHov || win.showUpdateChangelog
+                                                    readonly property string kind: win.showUpdateChangelog ? "accent" : "tonal"
 
-                                                    topLeftRadius: isPill ? (height / 2) : (isFirst ? outerR : innerR)
-                                                    bottomLeftRadius: isPill ? (height / 2) : (isFirst ? outerR : innerR)
-                                                    topRightRadius: isPill ? (height / 2) : (isLast ? outerR : innerR)
-                                                    bottomRightRadius: isPill ? (height / 2) : (isLast ? outerR : innerR)
+                                                    radius: (logBtnMa.pressed || win.showUpdateChangelog) ? (height / 2) : Theme.cornerRadius
+                                                    Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                                                    Behavior on topLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                                    Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                                    Behavior on topRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                                    Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-
-                                                    color: win.showUpdateChangelog
-                                                        ? Theme.withAlpha(Theme.primary, 0.30)
-                                                        : (isHov ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5))
+                                                    color: Ui.buttonFill(kind, isHov)
                                                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                                    border.width: 1
-                                                    border.color: (win.showUpdateChangelog || isHov) ? Theme.primary : Theme.withAlpha(Theme.primary, 0.15)
-                                                    Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
-                                                    scale: logBtnMa.pressed ? 0.94 : (isHov ? 1.02 : 1.0)
+                                                    scale: logBtnMa.pressed ? 0.94 : 1.0
                                                     Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
                                                     RowLayout {
@@ -1906,7 +1887,7 @@ FloatingWindow {
                                                         DankIcon {
                                                             name: win.showUpdateChangelog ? "expand_less" : "article"
                                                             size: 16
-                                                            color: (win.showUpdateChangelog || parent.parent.isHov) ? Theme.primary : Theme.surfaceText
+                                                            color: Ui.buttonInk(logBtn.kind)
                                                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
                                                         }
 
@@ -1914,7 +1895,7 @@ FloatingWindow {
                                                             text: win.showUpdateChangelog ? Tr.t("Hide Changelog") : Tr.t("View Changelog")
                                                             font.pixelSize: Theme.fontSizeSmall - 1
                                                             font.weight: Font.Medium
-                                                            color: (win.showUpdateChangelog || parent.parent.isHov) ? Theme.primary : Theme.surfaceText
+                                                            color: Ui.buttonInk(logBtn.kind)
                                                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
                                                         }
                                                     }
@@ -1928,32 +1909,19 @@ FloatingWindow {
                                                     }
                                                 }
 
-                                                // 2. Update and reload button (Last)
+                                                // 2. Update and reload
                                                 Rectangle {
                                                     Layout.fillWidth: true
                                                     Layout.preferredHeight: 34
                                                     property bool isHov: updBtnMa.containsMouse
-                                                    readonly property bool isFirst: false
-                                                    readonly property bool isLast: true
-                                                    readonly property real outerR: Theme.cornerRadius
-                                                    readonly property real innerR: 4
 
-                                                    topLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                                    bottomLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                                    topRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
-                                                    bottomRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
+                                                    radius: updBtnMa.pressed ? (height / 2) : Theme.cornerRadius
+                                                    Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                                                    Behavior on topLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                                    Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                                    Behavior on topRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                                    Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-
-                                                    color: isHov ? Theme.withAlpha(Theme.primary, 0.3) : Theme.withAlpha(Theme.primary, 0.18)
+                                                    color: Ui.buttonFill("filled", isHov)
                                                     Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                                    border.width: 1
-                                                    border.color: Theme.primary
 
-                                                    scale: updBtnMa.pressed ? 0.94 : (isHov ? 1.02 : 1.0)
+                                                    scale: updBtnMa.pressed ? 0.94 : 1.0
                                                     Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
                                                     RowLayout {
@@ -1963,14 +1931,14 @@ FloatingWindow {
                                                         DankIcon {
                                                             name: "download"
                                                             size: 14
-                                                            color: Theme.primary
+                                                            color: Ui.buttonInk("filled")
                                                         }
 
                                                         StyledText {
                                                             text: win.selfUpdateBusy ? Tr.t("Updating…") : Tr.t("Update & Reload")
                                                             font.pixelSize: Theme.fontSizeSmall - 1
                                                             font.weight: Font.Medium
-                                                            color: Theme.primary
+                                                            color: Ui.buttonInk("filled")
                                                         }
                                                     }
 
@@ -1996,7 +1964,6 @@ FloatingWindow {
                                                 opacity: win.showUpdateChangelog ? 1.0 : 0.0
                                                 radius: 8
                                                 color: Theme.withAlpha(Theme.surfaceContainerLowest, 0.55)
-                                                border.width: win.showUpdateChangelog ? 1 : 0
 
                                                 Behavior on implicitHeight { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
                                                 Behavior on opacity { NumberAnimation { duration: Theme.longDuration } }
@@ -2037,34 +2004,23 @@ FloatingWindow {
                                         repoUrl: win.githubUrl
                                     }
 
-                                    // Action buttons for GitHub & Issue Tracker (2 items: First & Last Segmented)
+                                    // GitHub & Issue Tracker: two separate tonal buttons,
+                                    // not a connected group
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: 4
+                                        spacing: Theme.spacingS
 
                                         // 1. GitHub (First)
                                         Rectangle {
                                             Layout.fillWidth: true
                                             Layout.preferredHeight: 34
                                             property bool isHov: ghMa.containsMouse
-                                            readonly property bool isFirst: true
-                                            readonly property bool isLast: false
-                                            readonly property real outerR: Theme.cornerRadius
-                                            readonly property real innerR: 4
 
-                                            topLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            bottomLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            topRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
-                                            bottomRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
+                                            radius: ghMa.pressed ? (height / 2) : Theme.cornerRadius
+                                            Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on topRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-
-                                            color: isHov ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5)
-                                            border.width: 1
-                                            border.color: isHov ? Theme.primary : Theme.withAlpha(Theme.primary, 0.15)
+                                            color: Ui.buttonFill("tonal", isHov)
+                                            Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                             RowLayout {
                                                 anchors.centerIn: parent
@@ -2073,13 +2029,13 @@ FloatingWindow {
                                                 DankIcon {
                                                     name: "code"
                                                     size: 16
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
 
                                                 StyledText {
                                                     text: Tr.t("GitHub Repository")
                                                     font.pixelSize: Theme.fontSizeSmall - 1
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
                                             }
 
@@ -2097,24 +2053,12 @@ FloatingWindow {
                                             Layout.fillWidth: true
                                             Layout.preferredHeight: 34
                                             property bool isHov: issueMa.containsMouse
-                                            readonly property bool isFirst: false
-                                            readonly property bool isLast: true
-                                            readonly property real outerR: Theme.cornerRadius
-                                            readonly property real innerR: 4
 
-                                            topLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            bottomLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            topRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
-                                            bottomRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
+                                            radius: issueMa.pressed ? (height / 2) : Theme.cornerRadius
+                                            Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on topRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-
-                                            color: isHov ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5)
-                                            border.width: 1
-                                            border.color: isHov ? Theme.primary : Theme.withAlpha(Theme.primary, 0.15)
+                                            color: Ui.buttonFill("tonal", isHov)
+                                            Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                             RowLayout {
                                                 anchors.centerIn: parent
@@ -2123,13 +2067,13 @@ FloatingWindow {
                                                 DankIcon {
                                                     name: "bug_report"
                                                     size: 16
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
 
                                                 StyledText {
                                                     text: Tr.t("Report an Issue")
                                                     font.pixelSize: Theme.fontSizeSmall - 1
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
                                             }
 
@@ -2176,34 +2120,22 @@ FloatingWindow {
                                         wrapMode: Text.WordWrap
                                     }
 
-                                    // 2 items: First & Last Segmented
+                                    // Two separate tonal buttons
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: 4
+                                        spacing: Theme.spacingS
 
                                         // 1. System Updater (First)
                                         Rectangle {
                                             Layout.fillWidth: true
                                             Layout.preferredHeight: 34
                                             property bool isHov: dmsSetMa.containsMouse
-                                            readonly property bool isFirst: true
-                                            readonly property bool isLast: false
-                                            readonly property real outerR: Theme.cornerRadius
-                                            readonly property real innerR: 4
 
-                                            topLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            bottomLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            topRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
-                                            bottomRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
+                                            radius: dmsSetMa.pressed ? (height / 2) : Theme.cornerRadius
+                                            Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on topRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-
-                                            color: isHov ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5)
-                                            border.width: 1
-                                            border.color: isHov ? Theme.primary : Theme.withAlpha(Theme.primary, 0.15)
+                                            color: Ui.buttonFill("tonal", isHov)
+                                            Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                             RowLayout {
                                                 anchors.centerIn: parent
@@ -2212,13 +2144,13 @@ FloatingWindow {
                                                 DankIcon {
                                                     name: "open_in_new"
                                                     size: 14
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
 
                                                 StyledText {
                                                     text: Tr.t("System Updater Settings")
                                                     font.pixelSize: Theme.fontSizeSmall - 1
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
                                             }
 
@@ -2239,24 +2171,12 @@ FloatingWindow {
                                             Layout.fillWidth: true
                                             Layout.preferredHeight: 34
                                             property bool isHov: dmsPlugMa.containsMouse
-                                            readonly property bool isFirst: false
-                                            readonly property bool isLast: true
-                                            readonly property real outerR: Theme.cornerRadius
-                                            readonly property real innerR: 4
 
-                                            topLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            bottomLeftRadius: isHov ? (height / 2) : (isFirst ? outerR : innerR)
-                                            topRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
-                                            bottomRightRadius: isHov ? (height / 2) : (isLast ? outerR : innerR)
+                                            radius: dmsPlugMa.pressed ? (height / 2) : Theme.cornerRadius
+                                            Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
-                                            Behavior on topLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on topRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                                            Behavior on bottomRightRadius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-
-                                            color: isHov ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.5)
-                                            border.width: 1
-                                            border.color: isHov ? Theme.primary : Theme.withAlpha(Theme.primary, 0.15)
+                                            color: Ui.buttonFill("tonal", isHov)
+                                            Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                             RowLayout {
                                                 anchors.centerIn: parent
@@ -2265,13 +2185,13 @@ FloatingWindow {
                                                 DankIcon {
                                                     name: "open_in_new"
                                                     size: 14
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
 
                                                 StyledText {
                                                     text: Tr.t("Manage Plugins")
                                                     font.pixelSize: Theme.fontSizeSmall - 1
-                                                    color: parent.parent.isHov ? Theme.primary : Theme.surfaceText
+                                                    color: Ui.buttonInk("tonal")
                                                 }
                                             }
 
@@ -3314,16 +3234,10 @@ FloatingWindow {
                             Layout.preferredWidth: statusBadgeText.implicitWidth + 16
                             radius: 10
                             color: win.engine.running
-                                ? Theme.withAlpha(Theme.primary, 0.2)
+                                ? Theme.withAlpha(Theme.primary, 0.22)
                                 : (SystemUpdateService.isChecking
                                     ? Theme.withAlpha(Theme.secondary, 0.2)
-                                    : Theme.withAlpha(Theme.primary, 0.15))
-                            border.width: 1
-                            border.color: win.engine.running
-                                ? Theme.primary
-                                : (SystemUpdateService.isChecking
-                                    ? Theme.withAlpha(Theme.secondary, 0.4)
-                                    : Theme.primarySelected)
+                                    : Theme.withAlpha(Theme.primary, 0.16))
 
                             StyledText {
                                 id: statusBadgeText
@@ -3357,7 +3271,7 @@ FloatingWindow {
                     }
                 }
 
-                // Header Action Buttons (Dynamic segmented capsule: Search, Refresh, Settings, Close)
+                // Header actions: standard icon buttons (Search, Refresh, Settings, Close)
                 RowLayout {
                     id: headerButtons
                     spacing: 4
@@ -3366,7 +3280,7 @@ FloatingWindow {
                         id: headerTooltip
                     }
 
-                    // 1. Search Button (First in segment)
+                    // 1. Search
                     Rectangle {
                         id: headerSearchBtn
                         width: 36
@@ -3375,23 +3289,14 @@ FloatingWindow {
                         property bool isHovered: searchMa.containsMouse
                         z: (isActive || isHovered) ? 3 : 1
 
-                        topLeftRadius: (searchMa.pressed || isActive) ? (height / 2) : Theme.cornerRadius
-                        bottomLeftRadius: (searchMa.pressed || isActive) ? (height / 2) : Theme.cornerRadius
-                        topRightRadius: (searchMa.pressed || isActive) ? (height / 2) : 4
-                        bottomRightRadius: (searchMa.pressed || isActive) ? (height / 2) : 4
+                        // Round at rest, squarer while pressed or switched on —
+                        // the Expressive shape change for a toggle
+                        radius: (searchMa.pressed || isActive) ? Theme.cornerRadius : (height / 2)
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                        color: isActive
-                            ? Theme.withAlpha(Theme.primary, 0.30)
-                            : (isHovered ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.45))
+                        readonly property string kind: isActive ? "iconSelected" : "icon"
+                        color: Ui.buttonFill(kind, isHovered)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: (isActive || isHovered) ? Theme.primary : Theme.withAlpha(Theme.primary, 0.14)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: searchMa.pressed ? 0.92 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -3399,15 +3304,15 @@ FloatingWindow {
                         DankRipple {
                             id: searchRip
                             anchors.fill: parent
-                            cornerRadius: parent.topLeftRadius
-                            rippleColor: Theme.primary
+                            cornerRadius: parent.radius
+                            rippleColor: Ui.buttonInk(headerSearchBtn.kind)
                         }
 
                         DankIcon {
                             anchors.centerIn: parent
                             name: "search"
                             size: 20
-                            color: (headerSearchBtn.isActive || headerSearchBtn.isHovered) ? Theme.primary : Theme.surfaceText
+                            color: Ui.buttonInk(headerSearchBtn.kind)
                         }
 
                         MouseArea {
@@ -3428,7 +3333,7 @@ FloatingWindow {
                         }
                     }
 
-                    // 2. Refresh Button (Middle in segment)
+                    // 2. Refresh
                     Rectangle {
                         id: windowRefreshButton
                         readonly property bool isActive: SystemUpdateService.isChecking
@@ -3438,23 +3343,14 @@ FloatingWindow {
                         property bool isHovered: refreshMa.containsMouse && btnEnabled
                         z: (isActive || isHovered) ? 3 : 1
 
-                        topLeftRadius: (refreshMa.pressed || isActive) ? (height / 2) : 4
-                        bottomLeftRadius: (refreshMa.pressed || isActive) ? (height / 2) : 4
-                        topRightRadius: (refreshMa.pressed || isActive) ? (height / 2) : 4
-                        bottomRightRadius: (refreshMa.pressed || isActive) ? (height / 2) : 4
+                        // Round at rest, squarer while pressed or switched on —
+                        // the Expressive shape change for a toggle
+                        radius: (refreshMa.pressed || isActive) ? Theme.cornerRadius : (height / 2)
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                        color: isActive
-                            ? Theme.withAlpha(Theme.primary, 0.30)
-                            : (isHovered ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.45))
+                        readonly property string kind: isActive ? "iconSelected" : "icon"
+                        color: Ui.buttonFill(kind, isHovered)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: (isActive || isHovered) ? Theme.primary : Theme.withAlpha(Theme.primary, 0.14)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: refreshMa.pressed ? 0.92 : 1.0
                         opacity: btnEnabled || isActive ? 1.0 : 0.4
@@ -3463,8 +3359,8 @@ FloatingWindow {
                         DankRipple {
                             id: refreshRip
                             anchors.fill: parent
-                            cornerRadius: parent.topLeftRadius
-                            rippleColor: Theme.primary
+                            cornerRadius: parent.radius
+                            rippleColor: Ui.buttonInk(windowRefreshButton.kind)
                         }
 
                         DankIcon {
@@ -3476,7 +3372,7 @@ FloatingWindow {
                             // grid and turns jagged once rotated; while it
                             // spins it is drawn as a distance field instead
                             smoothTransform: SystemUpdateService.isChecking && Ui.busyMotion
-                            color: (windowRefreshButton.isActive || windowRefreshButton.isHovered) ? Theme.primary : Theme.surfaceText
+                            color: Ui.buttonInk(windowRefreshButton.kind)
 
                             RotationAnimator on rotation {
                                 from: 0
@@ -3517,7 +3413,7 @@ FloatingWindow {
                         }
                     }
 
-                    // 3. Settings Button (Middle in segment)
+                    // 3. Settings
                     Rectangle {
                         id: headerSettingsBtn
                         width: 36
@@ -3526,23 +3422,14 @@ FloatingWindow {
                         property bool isHovered: settingsMa.containsMouse
                         z: (isActive || isHovered) ? 3 : 1
 
-                        topLeftRadius: (settingsMa.pressed || isActive) ? (height / 2) : 4
-                        bottomLeftRadius: (settingsMa.pressed || isActive) ? (height / 2) : 4
-                        topRightRadius: (settingsMa.pressed || isActive) ? (height / 2) : 4
-                        bottomRightRadius: (settingsMa.pressed || isActive) ? (height / 2) : 4
+                        // Round at rest, squarer while pressed or switched on —
+                        // the Expressive shape change for a toggle
+                        radius: (settingsMa.pressed || isActive) ? Theme.cornerRadius : (height / 2)
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                        color: isActive
-                            ? Theme.withAlpha(Theme.primary, 0.30)
-                            : (isHovered ? Theme.withAlpha(Theme.primary, 0.20) : Theme.withAlpha(Ui.chipSurfaceNested, 0.45))
+                        readonly property string kind: isActive ? "iconSelected" : "icon"
+                        color: Ui.buttonFill(kind, isHovered)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: (isActive || isHovered) ? Theme.primary : Theme.withAlpha(Theme.primary, 0.14)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: settingsMa.pressed ? 0.92 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -3550,15 +3437,15 @@ FloatingWindow {
                         DankRipple {
                             id: settingsRip
                             anchors.fill: parent
-                            cornerRadius: parent.topLeftRadius
-                            rippleColor: Theme.primary
+                            cornerRadius: parent.radius
+                            rippleColor: Ui.buttonInk(headerSettingsBtn.kind)
                         }
 
                         DankIcon {
                             anchors.centerIn: parent
                             name: "settings"
                             size: 20
-                            color: (headerSettingsBtn.isActive || headerSettingsBtn.isHovered) ? Theme.primary : Theme.surfaceText
+                            color: Ui.buttonInk(headerSettingsBtn.kind)
                         }
 
                         MouseArea {
@@ -3576,7 +3463,7 @@ FloatingWindow {
                         }
                     }
 
-                    // 4. Close Button (Last in segment)
+                    // 4. Close
                     Rectangle {
                         id: headerCloseBtn
                         width: 36
@@ -3585,21 +3472,12 @@ FloatingWindow {
                         property bool isHovered: closeMa.containsMouse
                         z: isHovered ? 3 : 1
 
-                        topLeftRadius: closeMa.pressed ? (height / 2) : 4
-                        bottomLeftRadius: closeMa.pressed ? (height / 2) : 4
-                        topRightRadius: closeMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomRightRadius: closeMa.pressed ? (height / 2) : Theme.cornerRadius
+                        radius: closeMa.pressed ? Theme.cornerRadius : (height / 2)
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-
-                        color: isHovered ? Theme.withAlpha(Theme.error, 0.22) : Theme.withAlpha(Ui.chipSurfaceNested, 0.45)
+                        // A standard icon button with a red state layer, since it closes
+                        color: isHovered ? Theme.withAlpha(Theme.error, 0.12) : Ui.buttonFill("icon", false)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: isHovered ? Theme.error : Theme.withAlpha(Theme.error, 0.15)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: closeMa.pressed ? 0.92 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -3607,15 +3485,15 @@ FloatingWindow {
                         DankRipple {
                             id: closeRip
                             anchors.fill: parent
-                            cornerRadius: parent.topRightRadius
-                            rippleColor: Theme.error
+                            cornerRadius: parent.radius
+                            rippleColor: Ui.failColor
                         }
 
                         DankIcon {
                             anchors.centerIn: parent
                             name: "close"
                             size: 20
-                            color: headerCloseBtn.isHovered ? Theme.error : Theme.surfaceText
+                            color: headerCloseBtn.isHovered ? Ui.failColor : Ui.buttonInk("icon")
                         }
 
                         MouseArea {
@@ -3643,8 +3521,6 @@ FloatingWindow {
             implicitHeight: osWarnRow.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
             color: Theme.withAlpha(Theme.warning, 0.14)
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.warning, 0.35)
 
             RowLayout {
                 id: osWarnRow
@@ -3677,9 +3553,7 @@ FloatingWindow {
             visible: Backend.backendId !== "dnf"
             implicitHeight: aptNoticeRow.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
-            color: Theme.withAlpha(Theme.secondary, 0.12)
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.secondary, 0.3)
+            color: Theme.withAlpha(Theme.secondary, 0.14)
 
             RowLayout {
                 id: aptNoticeRow
@@ -3715,8 +3589,8 @@ FloatingWindow {
                         iconName: "bug_report"
                         iconSize: 14
                         text: Tr.t("Report an issue")
-                        backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                        textColor: Theme.buttonText
+                        backgroundColor: Ui.buttonFill("tonal", false)
+                        textColor: Ui.buttonInk("tonal")
                         onClicked: Qt.openUrlExternally(win.githubUrl + "/issues")
                     }
                 }
@@ -3736,9 +3610,7 @@ FloatingWindow {
             implicitHeight: requirementsColumn.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
             readonly property color accent: Backend.missingRequirements.some(r => r.blocking) ? Theme.error : Theme.warning
-            color: Theme.withAlpha(accent, 0.10)
-            border.width: 1
-            border.color: Theme.withAlpha(accent, 0.30)
+            color: Theme.withAlpha(accent, 0.12)
 
             ColumnLayout {
                 id: requirementsColumn
@@ -3801,8 +3673,8 @@ FloatingWindow {
                                     iconName: "download"
                                     iconSize: 14
                                     text: Tr.t("Install")
-                                    backgroundColor: requirementRow.modelData.blocking ? Theme.primary : Theme.withAlpha(Theme.buttonBg, 0.9)
-                                    textColor: requirementRow.modelData.blocking ? Theme.primaryText : Theme.buttonText
+                                    backgroundColor: Ui.buttonFill(requirementRow.modelData.blocking ? "filled" : "tonal", false)
+                                    textColor: Ui.buttonInk(requirementRow.modelData.blocking ? "filled" : "tonal")
                                     onClicked: Backend.installRequirement(requirementRow.modelData.id, requirementRow.modelData.package)
                                 }
                             }
@@ -3868,9 +3740,7 @@ FloatingWindow {
             visible: win.currentTab === 0 && Backend.launcherEntryChecked && !Backend.launcherEntryPresent && !(win.widgetRoot && win.widgetRoot.launcherPromptDone)
             implicitHeight: launcherColumn.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
-            color: Theme.withAlpha(Theme.secondary, 0.10)
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.secondary, 0.30)
+            color: Theme.withAlpha(Theme.secondary, 0.14)
 
             ColumnLayout {
                 id: launcherColumn
@@ -3911,8 +3781,8 @@ FloatingWindow {
                             iconName: "add"
                             iconSize: 14
                             text: Tr.t("Add")
-                            backgroundColor: Theme.primary
-                            textColor: Theme.primaryText
+                            backgroundColor: Ui.buttonFill("filled", false)
+                            textColor: Ui.buttonInk("filled")
                             onClicked: {
                                 Backend.installLauncherEntry();
                                 PluginService.savePluginData("dankSoftwareDepot", "launcherPromptDone", true);
@@ -3952,9 +3822,7 @@ FloatingWindow {
             visible: win.currentTab === 0 && win.selfUpdateVersion !== "" && win.selfUpdateVersion !== win.selfUpdateDismissedVersion
             implicitHeight: selfUpdateColumn.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
-            color: Theme.withAlpha(Theme.primary, 0.10)
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.primary, 0.30)
+            color: Theme.withAlpha(Theme.primary, 0.12)
 
             ColumnLayout {
                 id: selfUpdateColumn
@@ -4078,8 +3946,6 @@ FloatingWindow {
             implicitHeight: rebootRow.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
             color: Theme.withAlpha(Theme.warning, 0.14)
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.warning, 0.35)
 
             RowLayout {
                 id: rebootRow
@@ -4654,8 +4520,6 @@ FloatingWindow {
             implicitHeight: progressColumn.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
             color: Ui.cardSurface
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.outline, 0.1)
             clip: true
 
             // A clean result clears itself after a few seconds, which without
@@ -4752,8 +4616,8 @@ FloatingWindow {
                             iconName: "history"
                             iconSize: 14
                             text: Tr.t("View in log")
-                            backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                            textColor: Theme.buttonText
+                            backgroundColor: Ui.buttonFill("tonal", false)
+                            textColor: Ui.buttonInk("tonal")
                             onClicked: win.openLatestLogEntry()
                         }
                     }
@@ -4909,8 +4773,8 @@ FloatingWindow {
                             iconSize: 14
                             horizontalPadding: Theme.spacingM
                             text: Tr.t("Update these")
-                            backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                            textColor: Theme.buttonText
+                            backgroundColor: Ui.buttonFill("tonal", false)
+                            textColor: Ui.buttonInk("tonal")
                             onClicked: win.sectionUpdate(stickyBar.rowData.category)
                         }
                     }
@@ -5009,8 +4873,8 @@ FloatingWindow {
                             iconSize: 14
                             horizontalPadding: Theme.spacingM
                             text: Tr.t("Update these")
-                            backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                            textColor: Theme.buttonText
+                            backgroundColor: Ui.buttonFill("tonal", false)
+                            textColor: Ui.buttonInk("tonal")
                             onClicked: win.sectionUpdate(catContainer.modelData.category)
                         }
                     }
@@ -5090,7 +4954,7 @@ FloatingWindow {
                         // while the card itself did not: a pointing hand over
                         // a surface that never acknowledged it. It answers in
                         // the same language every row in the app uses — the
-                        // primary tint and its border — and only while the
+                        // primary tint — and only while the
                         // press would actually do something, so it stays
                         // quiet through a check that is already running.
                         readonly property bool actionable: !SystemUpdateService.isChecking && !win.engine.running
@@ -5102,8 +4966,6 @@ FloatingWindow {
                         radius: Theme.cornerRadius
                         color: lit ? Theme.primaryHover
                                    : Theme.withAlpha(Ui.chipSurface, 0.45)
-                        border.width: lit ? 1 : 0
-                        border.color: Theme.withAlpha(Theme.primary, 0.4)
 
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
 
@@ -5853,8 +5715,8 @@ FloatingWindow {
                                             buttonHeight: 26
                                             horizontalPadding: Theme.spacingM
                                             text: (win.widgetRoot && win.widgetRoot.cleanupBusy === modelData.kind) ? Tr.t("Working…") : modelData.action
-                                            backgroundColor: Theme.withAlpha(Theme.buttonBg, 0.9)
-                                            textColor: Theme.buttonText
+                                            backgroundColor: Ui.buttonFill("tonal", false)
+                                            textColor: Ui.buttonInk("tonal")
                                             enabled: win.widgetRoot !== null && win.widgetRoot.cleanupBusy === ""
                                             onClicked: {
                                                 cleanupCard.noteCleanup(modelData.kind);
@@ -5966,26 +5828,15 @@ FloatingWindow {
                 Layout.preferredHeight: 36
                 Layout.preferredWidth: updateAllRow.implicitWidth + 32
 
-                topLeftRadius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
-                bottomLeftRadius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
-                topRightRadius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
-                bottomRightRadius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
+                // The Updates tab's one filled button; Cancel during a run
+                // is tonal with red ink, never a second loud button
+                readonly property string kind: busyRun ? "dangerTonal" : "filled"
 
-                Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
+                radius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
+                Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                color: busyRun
-                    ? (isHovered ? Theme.withAlpha(Theme.error, 0.3) : Theme.withAlpha(Theme.error, 0.18))
-                    : (isHovered ? Theme.withAlpha(Theme.primary, 0.28) : Theme.withAlpha(Theme.primary, 0.16))
+                color: Ui.buttonFill(kind, isHovered)
                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-
-                border.width: 1
-                border.color: busyRun
-                    ? (isHovered ? Theme.error : Theme.withAlpha(Theme.error, 0.4))
-                    : (isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.35))
-                Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                 scale: updateAllMa.pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -5993,8 +5844,8 @@ FloatingWindow {
                 DankRipple {
                     id: updateAllRip
                     anchors.fill: parent
-                    cornerRadius: parent.topLeftRadius
-                    rippleColor: busyRun ? Theme.error : Theme.primary
+                    cornerRadius: parent.radius
+                    rippleColor: Ui.buttonInk(windowUpdateAllButton.kind)
                 }
 
                 RowLayout {
@@ -6005,14 +5856,14 @@ FloatingWindow {
                     DankIcon {
                         name: windowUpdateAllButton.busyRun ? "close" : "download"
                         size: 16
-                        color: windowUpdateAllButton.busyRun ? Theme.error : Theme.primary
+                        color: Ui.buttonInk(windowUpdateAllButton.kind)
                     }
 
                     StyledText {
                         text: windowUpdateAllButton.busyRun ? Tr.t("Cancel") : (Tr.t("Update All") + ((win.widgetRoot && win.widgetRoot.updateSizeText !== "") ? " · " + win.widgetRoot.updateSizeText : ""))
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.Medium
-                        color: windowUpdateAllButton.busyRun ? Theme.error : Theme.primary
+                        color: Ui.buttonInk(windowUpdateAllButton.kind)
                     }
                 }
 

@@ -136,19 +136,12 @@ Rectangle {
         Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
         Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-        // The resting fill and outline of the rows in Installed and Install:
-        // with no container behind them, the row carries its own edge
-        color: isHighlighted
-            ? Theme.primaryHover
-            : Theme.withAlpha(Theme.secondary, 0.04)
-
-        border.width: 1
-        border.color: card.status === "error"
-            ? Theme.withAlpha(Theme.error, 0.5)
-            : (card.active ? Theme.withAlpha(Theme.primary, 0.4) : Theme.withAlpha(Theme.secondary, 0.15))
+        // The row carries its own surface; state is in the fill, not an
+        // outline (issue #28): a failure tints it red, the active row takes
+        // the accent (Ui.rowFill).
+        color: Ui.rowFill(isHighlighted, card.active, card.status === "error" ? "error" : "")
 
         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
     }
 
     DankRipple {

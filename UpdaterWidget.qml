@@ -1855,12 +1855,13 @@ PluginComponent {
                             }
                         }
 
-                        // Header Action Buttons (SteamFriends style paired capsule)
+                        // Header actions: two standard icon buttons, side by side
+                        // rather than joined — they are separate actions (#28)
                         Row {
                             Layout.alignment: Qt.AlignVCenter
-                            spacing: 1
+                            spacing: Theme.spacingXS
 
-                            // Refresh Button (Left side of capsule)
+                            // Refresh: switched on while a check or run is going
                             Rectangle {
                                 id: headerRefreshBtn
                                 property bool isHovered: refreshMa.containsMouse
@@ -1869,32 +1870,23 @@ PluginComponent {
                                 width: 38
                                 height: 38
 
-                                color: isHovered ? Theme.withAlpha(Theme.primary, 0.15) : Theme.withAlpha(Ui.cardSurface, 0.4)
-                                border.width: 1
-                                border.color: Theme.withAlpha(Theme.primary, isHovered ? 0.3 : 0.15)
+                                readonly property string kind: isBusy ? "iconSelected" : "icon"
+                                color: Ui.buttonFill(kind, isHovered)
 
-                                topLeftRadius: refreshMa.pressed || isBusy ? (height / 2) : Theme.cornerRadius
-                                bottomLeftRadius: refreshMa.pressed || isBusy ? (height / 2) : Theme.cornerRadius
-                                topRightRadius: refreshMa.pressed || isBusy ? (height / 2) : 4
-                                bottomRightRadius: refreshMa.pressed || isBusy ? (height / 2) : 4
-
-                                Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
+                                radius: refreshMa.pressed || isBusy ? (height / 2) : Theme.cornerRadius
+                                Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                 scale: refreshMa.pressed ? 0.92 : 1.0
                                 Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
-                                DankRipple { id: refreshRip; anchors.fill: parent; cornerRadius: parent.topLeftRadius; rippleColor: Theme.primary }
+                                DankRipple { id: refreshRip; anchors.fill: parent; cornerRadius: parent.radius; rippleColor: Ui.buttonInk(headerRefreshBtn.kind) }
 
                                 DankIcon {
                                     id: refreshBtnIcon
                                     name: "refresh"
                                     size: 20
-                                    color: Theme.primary
+                                    color: Ui.buttonInk(headerRefreshBtn.kind)
                                     anchors.centerIn: parent
                                     // Distance-field only while turned: sharp at rest,
                                     // and not jagged mid-turn
@@ -1924,7 +1916,7 @@ PluginComponent {
                                 }
                             }
 
-                            // Open Window Button (Right side of capsule)
+                            // Open the window
                             Rectangle {
                                 id: headerOpenBtn
                                 property bool isHovered: openMa.containsMouse
@@ -1932,32 +1924,22 @@ PluginComponent {
                                 width: 38
                                 height: 38
 
-                                color: isHovered ? Theme.withAlpha(Theme.secondary, 0.2) : Theme.withAlpha(Ui.cardSurface, 0.4)
-                                border.width: 1
-                                border.color: Theme.withAlpha(Theme.secondary, isHovered ? 0.4 : 0.15)
+                                color: Ui.buttonFill("icon", isHovered)
 
-                                topLeftRadius: openMa.pressed ? (height / 2) : 4
-                                bottomLeftRadius: openMa.pressed ? (height / 2) : 4
-                                topRightRadius: openMa.pressed ? (height / 2) : Theme.cornerRadius
-                                bottomRightRadius: openMa.pressed ? (height / 2) : Theme.cornerRadius
-
-                                Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                                Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
+                                radius: openMa.pressed ? (height / 2) : Theme.cornerRadius
+                                Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                                Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                                 scale: openMa.pressed ? 0.92 : 1.0
                                 Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
-                                DankRipple { id: openRip; anchors.fill: parent; cornerRadius: parent.topRightRadius; rippleColor: Theme.secondary }
+                                DankRipple { id: openRip; anchors.fill: parent; cornerRadius: parent.radius; rippleColor: Ui.buttonInk("icon") }
 
                                 DankIcon {
                                     id: openBtnIcon
                                     name: "open_in_new"
                                     size: 20
-                                    color: Theme.secondary
+                                    color: Ui.buttonInk("icon")
                                     anchors.centerIn: parent
                                     smoothTransform: true
                                     rotation: headerOpenBtn.isHovered ? 45 : 0
@@ -1990,8 +1972,6 @@ PluginComponent {
                     height: visible ? 40 : 0
                     radius: Theme.cornerRadius
                     color: Theme.withAlpha(Theme.warning, 0.14)
-                    border.width: 1
-                    border.color: Theme.withAlpha(Theme.warning, 0.35)
 
                     RowLayout {
                         anchors.fill: parent
@@ -2153,17 +2133,11 @@ PluginComponent {
                                     Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutQuad } }
                                     Behavior on bottomRightRadius { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutQuad } }
 
-                                    color: hovered
-                                        ? Theme.primaryHover
-                                        : Theme.withAlpha(Theme.secondary, 0.04)
-
-                                    border.width: 1
-                                    border.color: compactRow.isActive
-                                        ? Theme.withAlpha(Theme.primary, 0.35)
-                                        : Theme.withAlpha(Theme.secondary, 0.12)
+                                    // The active row takes the accent in its fill, not an
+                                    // outline (#28)
+                                    color: Ui.rowFill(hovered, compactRow.isActive)
 
                                     Behavior on color { ColorAnimation { duration: Theme.popoutAnimationDuration } }
-                                    Behavior on border.color { ColorAnimation { duration: Theme.popoutAnimationDuration } }
                                 }
 
                                 DankRipple {
@@ -2392,15 +2366,16 @@ PluginComponent {
                     }
                 }
 
-                // Footer Action Buttons (SteamFriends style paired capsule with dynamic Easing.OutExpo morphing)
+                // Footer actions: Update All is the popout's one filled button,
+                // Details sits beside it as a tonal one (#28)
                 Row {
                     id: popoutButtons
                     width: parent.width
                     height: 42
-                    spacing: 2
+                    spacing: Theme.spacingS
                     visible: (root.effectiveCount > 0 && !(engine.phase !== "idle" && !engine.running && SystemUpdateService.isChecking)) || engine.running
 
-                    // Primary Action Button (Update All / Cancel / Confirm) - Left of paired capsule
+                    // Update All / Cancel / Confirm
                     Rectangle {
                         id: updateAllBtn
                         property bool isHovered: updateAllMa.containsMouse
@@ -2413,33 +2388,24 @@ PluginComponent {
                             return Tr.t("Update All") + (root.updateSizeText !== "" ? " · " + root.updateSizeText : "");
                         }
                         readonly property string btnIcon: busyRun ? "close" : (root.confirmArmed ? "help" : "download")
-                        readonly property color btnBaseColor: busyRun ? Theme.error : (root.confirmArmed ? Theme.warning : Theme.primary)
+                        // Cancelling a run stays tonal (red ink): a filled red
+                        // button for the whole of a run would shout
+                        readonly property string kind: busyRun ? "dangerTonal" : (root.confirmArmed ? "warning" : "filled")
+                        readonly property color btnBaseColor: Ui.buttonInk(kind)
 
-                        width: (parent.width - 2) / 2
+                        width: (parent.width - parent.spacing) / 2
                         height: parent.height
 
-                        color: isHovered
-                            ? Theme.withAlpha(btnBaseColor, 0.22)
-                            : Theme.withAlpha(btnBaseColor, 0.12)
-                        border.width: 1
-                        border.color: Theme.withAlpha(btnBaseColor, isHovered ? 0.45 : 0.22)
+                        color: Ui.buttonFill(kind, isHovered)
 
-                        topLeftRadius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomLeftRadius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
-                        topRightRadius: updateAllMa.pressed ? (height / 2) : 4
-                        bottomRightRadius: updateAllMa.pressed ? (height / 2) : 4
-
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
+                        radius: updateAllMa.pressed ? (height / 2) : Theme.cornerRadius
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: updateAllMa.pressed ? 0.94 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
-                        DankRipple { id: updateAllRip; anchors.fill: parent; cornerRadius: parent.topLeftRadius; rippleColor: updateAllBtn.btnBaseColor }
+                        DankRipple { id: updateAllRip; anchors.fill: parent; cornerRadius: parent.radius; rippleColor: updateAllBtn.btnBaseColor }
 
                         MouseArea {
                             id: updateAllMa
@@ -2477,36 +2443,24 @@ PluginComponent {
                         }
                     }
 
-                    // Secondary Action Button (Details) - Right of paired capsule
+                    // Details
                     Rectangle {
                         id: detailsBtn
                         property bool isHovered: detailsMa.containsMouse
 
-                        width: (parent.width - 2) / 2
+                        width: (parent.width - parent.spacing) / 2
                         height: parent.height
 
-                        color: isHovered
-                            ? Theme.withAlpha(Theme.secondary, 0.2)
-                            : Theme.withAlpha(Ui.chipSurface, 0.6)
-                        border.width: 1
-                        border.color: Theme.withAlpha(Theme.secondary, isHovered ? 0.4 : 0.18)
+                        color: Ui.buttonFill("tonal", isHovered)
 
-                        topLeftRadius: detailsMa.pressed ? (height / 2) : 4
-                        bottomLeftRadius: detailsMa.pressed ? (height / 2) : 4
-                        topRightRadius: detailsMa.pressed ? (height / 2) : Theme.cornerRadius
-                        bottomRightRadius: detailsMa.pressed ? (height / 2) : Theme.cornerRadius
-
-                        Behavior on topLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomLeftRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on topRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
-                        Behavior on bottomRightRadius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
+                        radius: detailsMa.pressed ? (height / 2) : Theme.cornerRadius
+                        Behavior on radius { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                         scale: detailsMa.pressed ? 0.94 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
-                        DankRipple { id: detailsRip; anchors.fill: parent; cornerRadius: parent.topRightRadius; rippleColor: Theme.secondary }
+                        DankRipple { id: detailsRip; anchors.fill: parent; cornerRadius: parent.radius; rippleColor: Ui.buttonInk("tonal") }
 
                         MouseArea {
                             id: detailsMa
@@ -2527,7 +2481,7 @@ PluginComponent {
                             DankIcon {
                                 name: "open_in_new"
                                 size: 18
-                                color: detailsBtn.isHovered ? Theme.primary : Theme.surfaceText
+                                color: Ui.buttonInk("tonal")
                                 Layout.alignment: Qt.AlignVCenter
                                 rotation: detailsBtn.isHovered ? 45 : 0
                                 Behavior on rotation { NumberAnimation { duration: Theme.popoutAnimationDuration; easing.type: Easing.OutBack } }
@@ -2538,7 +2492,7 @@ PluginComponent {
                                 text: Tr.t("Details")
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.weight: Font.DemiBold
-                                color: detailsBtn.isHovered ? Theme.primary : Theme.surfaceText
+                                color: Ui.buttonInk("tonal")
                                 Layout.alignment: Qt.AlignVCenter
                                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
                             }

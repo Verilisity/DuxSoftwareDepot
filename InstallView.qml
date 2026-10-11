@@ -1503,11 +1503,8 @@ Item {
                 property bool isHovered: allSecMa.containsMouse
                 radius: allSecMa.pressed ? (height / 2) : 8
                 Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                color: isHovered ? Theme.withAlpha(Ui.chipSurfaceNested, 0.95) : Theme.withAlpha(Ui.chipSurfaceNested, 0.65)
+                color: Ui.buttonFill("tonal", isHovered)
                 Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                border.width: 1
-                border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.2)
-                Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
                 scale: allSecMa.pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
@@ -1515,7 +1512,7 @@ Item {
                     id: allSecRip
                     anchors.fill: parent
                     cornerRadius: parent.radius
-                    rippleColor: Theme.primary
+                    rippleColor: Ui.buttonInk("tonal")
                 }
 
                 RowLayout {
@@ -1526,14 +1523,14 @@ Item {
                     DankIcon {
                         name: "arrow_back"
                         size: 16
-                        color: Theme.surfaceText
+                        color: Ui.buttonInk("tonal")
                     }
 
                     StyledText {
                         text: Tr.t("All sections")
                         font.pixelSize: Theme.fontSizeSmall
                         font.weight: Font.Medium
-                        color: Theme.surfaceText
+                        color: Ui.buttonInk("tonal")
                     }
                 }
 
@@ -1615,8 +1612,6 @@ Item {
             implicitHeight: installProgressColumn.implicitHeight + Theme.spacingM * 2
             radius: Theme.cornerRadius
             color: Ui.cardSurface
-            border.width: 1
-            border.color: Theme.withAlpha(Theme.outline, 0.1)
 
             ColumnLayout {
                 id: installProgressColumn
@@ -2019,11 +2014,8 @@ Item {
                             property bool isHovered: viewAllMa.containsMouse
                             radius: viewAllMa.pressed ? (height / 2) : 8
                             Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                            color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                            color: Ui.buttonFill("tonal", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.2)
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
                             scale: viewAllMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
@@ -2031,7 +2023,7 @@ Item {
                                 id: viewAllRip
                                 anchors.fill: parent
                                 cornerRadius: parent.radius
-                                rippleColor: Theme.primary
+                                rippleColor: Ui.buttonInk("tonal")
                             }
 
                             RowLayout {
@@ -2043,13 +2035,13 @@ Item {
                                     text: Tr.t("View all")
                                     font.pixelSize: Theme.fontSizeSmall - 1
                                     font.weight: Font.Medium
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("tonal")
                                 }
 
                                 DankIcon {
                                     name: "chevron_right"
                                     size: 14
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("tonal")
                                 }
                             }
 
@@ -2159,11 +2151,8 @@ Item {
                             property bool isHovered: coprSearchMa.containsMouse
                             radius: coprSearchMa.pressed ? (height / 2) : 8
                             Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                            color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                            color: Ui.buttonFill("tonal", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.2)
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
                             scale: coprSearchMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
@@ -2171,7 +2160,7 @@ Item {
                                 id: coprSearchRip
                                 anchors.fill: parent
                                 cornerRadius: parent.radius
-                                rippleColor: Theme.primary
+                                rippleColor: Ui.buttonInk("tonal")
                             }
 
                             RowLayout {
@@ -2182,14 +2171,14 @@ Item {
                                 DankIcon {
                                     name: "search"
                                     size: 14
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("tonal")
                                 }
 
                                 StyledText {
                                     text: Tr.t("Search Copr")
                                     font.pixelSize: Theme.fontSizeSmall - 1
                                     font.weight: Font.Medium
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("tonal")
                                 }
                             }
 
@@ -2307,11 +2296,8 @@ Item {
                         property bool isHovered: brewInstMa.containsMouse
                         radius: brewInstMa.pressed ? (height / 2) : 8
                         Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                        color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                        color: Ui.buttonFill("accent", isHovered)
                         Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                        border.width: 1
-                        border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.2)
-                        Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
                         scale: brewInstMa.pressed ? 0.94 : 1.0
                         Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
@@ -2319,7 +2305,7 @@ Item {
                             id: brewInstRip
                             anchors.fill: parent
                             cornerRadius: parent.radius
-                            rippleColor: Theme.primary
+                            rippleColor: Ui.buttonInk("accent")
                         }
 
                         RowLayout {
@@ -2330,14 +2316,14 @@ Item {
                             DankIcon {
                                 name: "download"
                                 size: 13
-                                color: Theme.primary
+                                color: Ui.buttonInk("accent")
                             }
 
                             StyledText {
                                 text: Tr.t("Install")
                                 font.pixelSize: Theme.fontSizeSmall - 1
                                 font.weight: Font.Medium
-                                color: Theme.primary
+                                color: Ui.buttonInk("accent")
                             }
                         }
 
@@ -2423,11 +2409,8 @@ Item {
                             property bool isHovered: brewSearchMa.containsMouse
                             radius: brewSearchMa.pressed ? (height / 2) : 8
                             Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
-                            color: isHovered ? Theme.withAlpha(Theme.primary, 0.22) : Theme.withAlpha(Theme.primary, 0.12)
+                            color: Ui.buttonFill("tonal", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isHovered ? Theme.primary : Theme.withAlpha(Theme.primary, 0.2)
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
                             scale: brewSearchMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
 
@@ -2435,7 +2418,7 @@ Item {
                                 id: brewSearchRip
                                 anchors.fill: parent
                                 cornerRadius: parent.radius
-                                rippleColor: Theme.primary
+                                rippleColor: Ui.buttonInk("tonal")
                             }
 
                             RowLayout {
@@ -2446,14 +2429,14 @@ Item {
                                 DankIcon {
                                     name: "search"
                                     size: 14
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("tonal")
                                 }
 
                                 StyledText {
                                     text: Tr.t("Search Homebrew")
                                     font.pixelSize: Theme.fontSizeSmall - 1
                                     font.weight: Font.Medium
-                                    color: Theme.primary
+                                    color: Ui.buttonInk("tonal")
                                 }
                             }
 
@@ -2585,18 +2568,12 @@ Item {
                     property real blrAnim: blr; Behavior on blrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
                     property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
-                    property color paintColor: hovered
-                        ? Theme.primaryHover
-                        : Theme.withAlpha(Theme.secondary, 0.04)
-
-                    property color paintBorder: selected
-                        ? Theme.withAlpha(Theme.primary, 0.4)
-                        : Theme.withAlpha(Theme.secondary, 0.15)
+                    property color paintColor: Ui.rowFill(hovered, selected)
 
                     ShapePath {
                         fillColor: resultBg.paintColor
-                        strokeColor: resultBg.paintBorder
-                        strokeWidth: 1
+                        strokeColor: "transparent"
+                        strokeWidth: -1
 
                         startX: resultBg.tlrAnim; startY: 0
                         PathLine { x: resultBg.width - resultBg.trrAnim; y: 0 }
@@ -2786,15 +2763,8 @@ Item {
                             Behavior on radius { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutExpo } }
 
                             readonly property bool isPrimary: picks || modelData.kind === "flatpak"
-                            color: isPrimary
-                                ? (isHovered ? Theme.withAlpha(Theme.primary, 0.25) : Theme.withAlpha(Theme.primary, 0.15))
-                                : (isHovered ? Theme.withAlpha(Ui.chipSurfaceNested, 0.9) : Theme.withAlpha(Ui.chipSurfaceNested, 0.6))
+                            color: Ui.buttonFill(instActionBtn.isPrimary ? "accent" : "tonal", isHovered)
                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }
-                            border.width: 1
-                            border.color: isPrimary
-                                ? (isHovered ? Theme.primary : Theme.primarySelected)
-                                : (isHovered ? Theme.primary : Theme.primaryHover)
-                            Behavior on border.color { ColorAnimation { duration: Theme.mediumDuration } }
 
                             scale: instActionMa.pressed ? 0.94 : 1.0
                             Behavior on scale { NumberAnimation { duration: Theme.mediumDuration; easing.type: Easing.OutBack } }
@@ -2803,7 +2773,7 @@ Item {
                                 id: instActionRip
                                 anchors.fill: parent
                                 cornerRadius: parent.radius
-                                rippleColor: isPrimary ? Theme.primary : Theme.surfaceText
+                                rippleColor: Ui.buttonInk(instActionBtn.isPrimary ? "accent" : "tonal")
                             }
 
                             RowLayout {
@@ -2814,14 +2784,14 @@ Item {
                                 DankIcon {
                                     name: instActionBtn.picks ? "download" : (modelData.kind === "appimage" && !modelData.repo ? "open_in_new" : "download")
                                     size: 13
-                                    color: instActionBtn.isPrimary ? Theme.primary : Theme.surfaceText
+                                    color: Ui.buttonInk(instActionBtn.isPrimary ? "accent" : "tonal")
                                 }
 
                                 StyledText {
                                     text: instActionBtn.picks ? Tr.t("Install") : (modelData.kind === "flatpak" ? "Flathub" : (modelData.kind === "appimage" ? "AppImage" : (modelData.kind === "copr" ? "Copr" : Backend.systemRepoLabel)))
                                     font.pixelSize: Theme.fontSizeSmall - 1
                                     font.weight: Font.Medium
-                                    color: instActionBtn.isPrimary ? Theme.primary : Theme.surfaceText
+                                    color: Ui.buttonInk(instActionBtn.isPrimary ? "accent" : "tonal")
                                 }
                             }
 

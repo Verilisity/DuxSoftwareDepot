@@ -5,6 +5,18 @@ in-app when the plugin offers its own update.
 
 ## Unreleased
 
+- **Buttons and lists without outlines, as in Material 3 Expressive.**
+  Buttons, rows, cards and banners drew a thin outline; the shell itself
+  has moved away from that, and the window now follows it (#28). How much
+  a button matters shows in its fill: each area has at most one filled
+  button, its main action — Update all, Install from Flathub, Open — and
+  the rest are tonal, while "Read more" and "Show all" are plain text. The
+  main button takes the colours set under Settings → Theme. Buttons that
+  were joined into one pill without belonging together are separate now.
+  List rows have a surface of their own instead of an outline, and show
+  hover, selection, a failure or the installed source in that surface.
+  Thanks to @apollo79 for the issue and to @JDKamalakar for the discussion.
+
 - **A DMS plugin update shows what it changes.** The details of a plugin
   update showed the plugin's description and nothing about the update. They
   now show the release notes the author published for the new version, or

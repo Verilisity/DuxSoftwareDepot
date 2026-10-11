@@ -465,9 +465,9 @@ Item {
                                         property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
                                         ShapePath {
-                                            fillColor: suggBg.hovered ? Theme.primaryHover : Theme.withAlpha(Theme.secondary, 0.04)
-                                            strokeColor: Theme.withAlpha(Theme.secondary, 0.15)
-                                            strokeWidth: 1
+                                            fillColor: Ui.rowFill(suggBg.hovered, false)
+                                            strokeColor: "transparent"
+                                            strokeWidth: -1
 
                                             startX: suggBg.tlrAnim; startY: 0
                                             PathLine { x: suggBg.width - suggBg.trrAnim; y: 0 }
@@ -616,9 +616,9 @@ Item {
                                         property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
                                         ShapePath {
-                                            fillColor: remoteBg.hovered ? Theme.primaryHover : Theme.withAlpha(Theme.secondary, 0.04)
-                                            strokeColor: Theme.withAlpha(Theme.secondary, 0.15)
-                                            strokeWidth: 1
+                                            fillColor: Ui.rowFill(remoteBg.hovered, false)
+                                            strokeColor: "transparent"
+                                            strokeWidth: -1
 
                                             startX: remoteBg.tlrAnim; startY: 0
                                             PathLine { x: remoteBg.width - remoteBg.trrAnim; y: 0 }
@@ -781,9 +781,9 @@ Item {
                                         property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
                                         ShapePath {
-                                            fillColor: catBg.hovered ? Theme.primaryHover : Theme.withAlpha(Theme.secondary, 0.04)
-                                            strokeColor: Theme.withAlpha(Theme.secondary, 0.15)
-                                            strokeWidth: 1
+                                            fillColor: Ui.rowFill(catBg.hovered, false)
+                                            strokeColor: "transparent"
+                                            strokeWidth: -1
 
                                             startX: catBg.tlrAnim; startY: 0
                                             PathLine { x: catBg.width - catBg.trrAnim; y: 0 }
@@ -1006,8 +1006,8 @@ Item {
                                         iconName: dialog.showNoise ? "visibility_off" : "visibility"
                                         iconSize: 14
                                         text: dialog.showNoise ? Tr.t("Hide debug/source repos") : Tr.t("Show debug/source repos")
-                                        backgroundColor: Ui.chipSurfaceNested
-                                        textColor: Theme.surfaceVariantText
+                                        backgroundColor: Ui.buttonFill("tonal", false)
+                                        textColor: Ui.buttonInk("tonal")
                                         onClicked: dialog.showNoise = !dialog.showNoise
                                     }
                                 }
@@ -1052,9 +1052,9 @@ Item {
                                         property real brrAnim: brr; Behavior on brrAnim { NumberAnimation { duration: Theme.extraLongDuration; easing.type: Easing.OutExpo } }
 
                                         ShapePath {
-                                            fillColor: repoBg.hovered ? Theme.primaryHover : Theme.withAlpha(Theme.secondary, 0.04)
-                                            strokeColor: Theme.withAlpha(Theme.secondary, 0.15)
-                                            strokeWidth: 1
+                                            fillColor: Ui.rowFill(repoBg.hovered, false)
+                                            strokeColor: "transparent"
+                                            strokeWidth: -1
 
                                             startX: repoBg.tlrAnim; startY: 0
                                             PathLine { x: repoBg.width - repoBg.trrAnim; y: 0 }

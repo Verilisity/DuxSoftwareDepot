@@ -155,13 +155,9 @@ Column {
                 smooth: true
 
                 ShapePath {
-                    fillColor: origMa.containsMouse
-                        ? (here ? Theme.withAlpha(Theme.success, 0.22) : Theme.primaryPressed)
-                        : (here ? Theme.withAlpha(Theme.success, 0.12) : Theme.withAlpha(Ui.chipSurfaceNested, 0.45))
-                    strokeColor: origMa.containsMouse
-                        ? (here ? Theme.withAlpha(Theme.success, 0.7) : Theme.withAlpha(Theme.primary, 0.4))
-                        : (here ? Theme.withAlpha(Theme.success, 0.35) : Theme.withAlpha(Theme.primary, 0.1))
-                    strokeWidth: 1
+                    fillColor: Ui.rowFill(origMa.containsMouse, false, here ? "success" : "", Theme.withAlpha(Ui.chipSurfaceNested, 0.45))
+                    strokeColor: "transparent"
+                    strokeWidth: -1
                     joinStyle: ShapePath.RoundJoin
 
                     startX: 0

@@ -115,8 +115,6 @@ Item {
         height: Math.min(parent.height - Theme.spacingXL * 2, sheetColumn.implicitHeight + Theme.spacingL * 2)
         radius: Theme.cornerRadius
         color: Ui.chipSurface
-        border.width: 1
-        border.color: Theme.withAlpha(Theme.outline, 0.2)
         scale: dialog.showing ? 1.0 : 0.94
         opacity: dialog.showing ? 1.0 : 0.0
         Behavior on scale { NumberAnimation { duration: Theme.longDuration; easing.type: Easing.OutBack } }
@@ -257,8 +255,8 @@ Item {
                             iconName: "open_in_new"
                             iconSize: 13
                             text: Tr.t("Read on archlinux.org")
-                            backgroundColor: Theme.buttonBg
-                            textColor: Theme.buttonText
+                            backgroundColor: Ui.buttonFill("tonal", false)
+                            textColor: Ui.buttonInk("tonal")
                             onClicked: Qt.openUrlExternally(newsRow.modelData.url)
                         }
                     }
@@ -276,8 +274,8 @@ Item {
                     iconName: "history"
                     iconSize: 13
                     text: Tr.t("Older news")
-                    backgroundColor: Theme.buttonBg
-                    textColor: Theme.buttonText
+                    backgroundColor: Ui.buttonFill("tonal", false)
+                    textColor: Ui.buttonInk("tonal")
                     onClicked: dialog.showAll = true
                 }
 
@@ -292,6 +290,9 @@ Item {
                     iconName: "mark_email_read"
                     iconSize: 13
                     text: Tr.t("Mark all as read")
+                    // What the dialog is for: the one filled button
+                    backgroundColor: Theme.buttonBg
+                    textColor: Theme.buttonText
                     onClicked: dialog.markAllRead()
                 }
             }
