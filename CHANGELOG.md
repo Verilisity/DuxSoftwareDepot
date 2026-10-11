@@ -3,7 +3,7 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
-## Unreleased
+## 1.6.0 — 2026-10-11
 
 - **Buttons and lists without outlines, as in Material 3 Expressive.**
   Buttons, rows, cards and banners drew a thin outline; the shell itself
