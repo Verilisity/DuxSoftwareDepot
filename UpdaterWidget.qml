@@ -1666,6 +1666,13 @@ PluginComponent {
                 toVersion: ai.latest
             });
         }
+        // Counted in the header and the pill all along, but never listed:
+        // with only a plugin update pending, the popout said "1 update
+        // ready" above "Your system is up to date!"
+        for (const plugin of pluginUpdates || [])
+            rows.push(plugin);
+        for (const formula of brewUpdates || [])
+            rows.push(formula);
         return rows;
     }
     readonly property int heldCount: heldSystemKeys.length
@@ -2202,7 +2209,7 @@ PluginComponent {
                                         DankIcon {
                                             anchors.centerIn: parent
                                             visible: rowLogo.status !== Image.Ready
-                                            name: compactRow.modelData.repo === "flatpak" ? "apps" : "memory"
+                                            name: compactRow.modelData.repo === "dmsplugin" ? (compactRow.modelData.icon || "extension") : (compactRow.modelData.repo === "flatpak" ? "apps" : Ui.sourceIcon(compactRow.modelData.repo))
                                             size: 16
                                             color: rowMa.containsMouse ? Theme.primary : (Ui.tintAppIcons ? Theme.primary : Theme.surfaceVariantText)
                                             Behavior on color { ColorAnimation { duration: Theme.mediumDuration } }

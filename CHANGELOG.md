@@ -26,6 +26,11 @@ in-app when the plugin offers its own update.
   settings and About pages scroll the way the rest of the shell does too,
   and show a scrollbar.
 
+- **The bar's popout lists plugin and Homebrew updates.** They were counted
+  — the pill and the popout's header said "1 update ready" — but not
+  listed, so with only a plugin update pending the popout showed that
+  count above "Your system is up to date!".
+
 - **The globe and lock in an app's details say what they do.** Hovering
   them shows "Open website" with the address, and whether the lock holds
   the app back from updates or lets it update again.
