@@ -3,6 +3,15 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
+## 1.6.1 — 2026-10-13
+
+- **Updates that were just installed no longer reappear after a run.**
+  The check at the end of a run could join one the shell's update service
+  had already started while the run was still installing. That check read
+  the system from before the run, and the list came back offering exactly
+  what had just been updated. The check after a run now always starts
+  afresh.
+
 ## 1.6.0 — 2026-10-11
 
 - **Buttons and lists without outlines, as in Material 3 Expressive.**
