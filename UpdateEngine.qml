@@ -1510,7 +1510,11 @@ Item {
             overallFraction = 1;
         if (finalPhase === "done" && _startVerification())
             phase = "verifying";
-        SystemUpdateService.checkForUpdates();
+        // Forced: an unforced refresh that finds a check already running only
+        // waits for it and takes its answer, and a check that started while
+        // the transaction was still running read the database from before it
+        // — the list came back offering what had just been installed.
+        DMSService.sysupdateRefresh(true, null);
         // Only a run that finished its work says anything useful about how
         // long that work takes; a cancelled one would drag the estimate down
         if (finalPhase !== "cancelled" && _runStartedAt > 0 && plannedCount > 0)
