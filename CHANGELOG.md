@@ -3,6 +3,18 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
+## Unreleased
+
+- **Updates apt keeps back are held instead of failing.** On Debian and
+  Ubuntu, `apt-get upgrade` leaves an update alone when it needs a new
+  package, when an installed package does not allow the new version — dms
+  pinning the quickshell it was built for — or when it is a phased update
+  still rolling out. The window offered such updates anyway, and after a
+  run reported them as "not updated — try again", which never helped. They
+  now sit under Held packages with the reason, such as "kept back (via
+  dms)", stay out of Update all, and come back by themselves once apt will
+  install them. Thanks to @boembast for the report.
+
 ## 1.6.1 — 2026-10-13
 
 - **Updates that were just installed no longer reappear after a run.**

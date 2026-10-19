@@ -72,6 +72,29 @@ jobs:
       - name: Everything else at least parses
         run: python3 -m compileall -q scripts
 
+  apt:
+    name: What apt-get upgrade keeps back · ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Debian's oldest apt we support, its current one, and Ubuntu, where
+        # phased updates are the norm
+        image: ['debian:12', 'debian:13', 'ubuntu:24.04']
+    container: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: python-apt and apt-ftparchive
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3-apt apt-utils
+
+      - name: Kept-back updates are held, with the reason
+        env:
+          DSD_APT_SANDBOX: '1'
+        run: python3 scripts/test_apt_kept_back.py
+
   metadata:
     name: Release metadata
     runs-on: ubuntu-latest

@@ -268,7 +268,8 @@ def installed_table():
 
 
 def holds():
-    """{name: reason} — apt-mark holds, or pacman.conf IgnorePkg entries."""
+    """{name: reason} — apt-mark holds and what `apt-get upgrade` keeps back,
+    or pacman.conf IgnorePkg entries."""
     if detect() == "pacman":
         out = {}
         try:
@@ -282,6 +283,9 @@ def holds():
         except OSError:
             pass
         return out
+    out = _apt_holds()
+    if out is not None:
+        return out
     out = {}
     try:
         res = subprocess.run(["apt-mark", "showhold"],
@@ -293,6 +297,97 @@ def holds():
     except (OSError, subprocess.SubprocessError):
         pass
     return out
+
+
+def _apt_holds():
+    """{name: reason} for apt-mark holds and for upgradable packages
+    `apt-get upgrade` leaves alone; None when apt_pkg cannot be used.
+
+    The daemon lists `apt list --upgradable` and then runs `apt-get upgrade`,
+    which neither installs new packages nor removes any. An update that
+    needs either, one an installed package does not allow (dms pinning the
+    quickshell it was built against), or a phased one still rolling out is
+    offered and then kept back, and the run reported it as failed — "try
+    again", which never helps. So the same upgrade is resolved here, on the
+    local cache only, and what it does not mark is held, with the reason.
+
+    Opening the cache is nearly all of the cost (0.9 s on a full Debian
+    index, the same as `apt list --upgradable`), so the holds are read from
+    it too rather than from `apt-mark showhold`, which opens it again. And
+    apt_pkg rather than apt.Cache: the wrapper builds a Python object per
+    package in the archive, another second.
+    """
+    out = {}
+    try:
+        import interp
+        interp.ensure("apt_pkg")
+        import apt_pkg
+        apt_pkg.init()
+        cache = apt_pkg.Cache(None)
+        depcache = apt_pkg.DepCache(cache)
+    except Exception:
+        return None
+    try:
+        upgradable = []
+        for p in cache.packages:
+            if not p.current_ver:
+                continue
+            if p.selected_state == apt_pkg.SELSTATE_HOLD:
+                out[p.name] = "hold"
+            elif depcache.is_upgradable(p):
+                upgradable.append(p)
+        if not upgradable:
+            return out
+        depcache.upgrade(False)
+        records = apt_pkg.PackageRecords(cache)
+        for pkg in upgradable:
+            if not depcache.marked_upgrade(pkg):
+                cand = depcache.get_candidate_ver(pkg)
+                out[pkg.name] = _kept_back_reason(apt_pkg, records, pkg, cand)
+    except Exception:
+        pass
+    return out
+
+
+def _kept_back_reason(apt_pkg, records, pkg, cand):
+    if cand.file_list and records.lookup(cand.file_list[0]) \
+            and "\nPhased-Update-Percentage:" in "\n" + records.record:
+        return "kept back (phased update)"
+    # Who stands in the way: an installed package whose dependency the new
+    # version does not satisfy, or that breaks or conflicts with it
+    blockers = set()
+    for dep in pkg.rev_depends_list:
+        parent = dep.parent_pkg
+        if parent.current_ver is None or dep.parent_ver.id != parent.current_ver.id:
+            continue
+        fits = not dep.target_ver or apt_pkg.check_dep(cand.ver_str, dep.comp_type, dep.target_ver)
+        if (dep.dep_type_untranslated in ("Depends", "PreDepends") and not fits) \
+                or (dep.dep_type_untranslated in ("Breaks", "Conflicts") and fits):
+            blockers.add(parent.name)
+    # ...or one the new version itself breaks
+    for dep_type in ("Breaks", "Conflicts"):
+        for group in cand.depends_list.get(dep_type, []):
+            for dep in group:
+                target = dep.target_pkg
+                if target.current_ver is None or target.name == pkg.name:
+                    continue
+                if not dep.target_ver or apt_pkg.check_dep(target.current_ver.ver_str, dep.comp_type, dep.target_ver):
+                    blockers.add(target.name)
+    if blockers:
+        return "kept back (via " + ", ".join(sorted(blockers)[:3]) + ")"
+    # A dependency of the new version that nothing installed satisfies
+    for dep_type in ("Depends", "PreDepends"):
+        for group in cand.depends_list.get(dep_type, []):
+            if not any(_installed_or_provided(dep.target_pkg) for dep in group):
+                return "kept back (needs new packages)"
+    return "kept back"
+
+
+def _installed_or_provided(target):
+    if target.current_ver is not None:
+        return True
+    return any(ver.parent_pkg.current_ver is not None
+               for _, _, ver in target.provides_list)
 
 
 def available_versions(name):
