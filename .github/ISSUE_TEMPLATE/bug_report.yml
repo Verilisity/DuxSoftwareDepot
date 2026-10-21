@@ -50,7 +50,7 @@ body:
     attributes:
       label: Distribution and DMS version
       description: The release you are on, and the DMS version (`dms version`).
-      placeholder: "Fedora 44 · DMS 1.5.2"
+      placeholder: "Fedora 44 · DMS 2.0.0"
     validations:
       required: true
 

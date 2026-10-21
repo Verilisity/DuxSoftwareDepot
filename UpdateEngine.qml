@@ -87,7 +87,9 @@ Item {
     // pass and updated in a separate final pass once everything else is done;
     // that transaction runs inside the daemon, so it completes even if the
     // shell reloads while it runs.
-    readonly property var shellPackagePattern: /^(dms|dms-cli|dms-greeter|quickshell(-git)?)$/
+    // The dux-* names are the ones Dux Labs suggests packagers move to with
+    // 2.0; dms-shell is what Arch and Debian already call it.
+    readonly property var shellPackagePattern: /^(dms(-git)?|dms-cli|dms-greeter|dms-shell(-git|-bin)?|dux-shell(-git)?|dux-greeter|quickshell(-git)?)$/
 
     // FirmwareService instance (bound by the widget); firmware updates run
     // as the last phase via fwupdmgr.
@@ -195,7 +197,7 @@ Item {
         case "firmware":
             return Tr.t("Updating firmware…");
         case "dms":
-            return Tr.t("Updating DankMaterialShell… (shell may reload)");
+            return Tr.t("Updating Dux Shell… (shell may reload)");
         case "brew":
             return Tr.t("Upgrading Homebrew formulae… (building from source can take a while)");
         case "plugins":
@@ -243,7 +245,7 @@ Item {
     property string _daemonKind: "dnf"    // which daemon pass is active: dnf | shell
     // Whether the shell pass is carrying the whole rpm set rather than only
     // the packages that reload the shell — it says so, rather than announcing
-    // DankMaterialShell while installing somebody else's library
+    // Dux Shell while installing somebody else's library
     property var _firmwareItems: []
     property real _firmwareFraction: 0
     property int _firmwareDone: 0

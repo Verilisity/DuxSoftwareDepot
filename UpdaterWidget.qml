@@ -9,7 +9,7 @@ import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
 
-// Dank Software Depot — DankBar widget.
+// Dux Software Depot — DankBar widget.
 // The pill shows the update count (or live progress during an update run).
 // Clicking opens a compact popout; the full experience lives in the
 // standalone window (UpdaterWindow).
@@ -91,15 +91,18 @@ PluginComponent {
     }
 
     // Own app icon (Claude-designed), following the active light/dark theme
-    readonly property url appIconSource: Qt.resolvedUrl("assets/icons/dank-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
+    readonly property url appIconSource: Qt.resolvedUrl("assets/icons/dux-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
 
-    // DMS penguin logo from the running shell's assets (path changes per version)
+    // DMS penguin logo from the running shell's assets (path changes per
+    // version). Dux Shell 2.0 unpacks the shell under dms-shell/, older
+    // versions under danklinux-shell/ — which can linger after an upgrade
+    // until the next reboot, so the current name is asked first.
     property string dankLogoPath: ""
 
     Process {
         id: dankLogoProcess
         running: true
-        command: ["sh", "-c", "ls \"$XDG_RUNTIME_DIR\"/danklinux-shell/*/assets/danklogo.svg 2>/dev/null | head -1"]
+        command: ["sh", "-c", "for d in dms-shell danklinux-shell; do ls \"$XDG_RUNTIME_DIR\"/$d/*/assets/danklogo.svg 2>/dev/null; done | head -1"]
 
         stdout: StdioCollector {
             onStreamFinished: root.dankLogoPath = text.trim()
@@ -393,12 +396,12 @@ PluginComponent {
     // the window: notify-send --action waits and prints the chosen action, and
     // the detached shell turns that into the plugin's own IPC call.
     function notify(summary, body) {
-        const iconFile = Qt.resolvedUrl("assets/icons/dank-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg").toString().replace("file://", "");
+        const iconFile = Qt.resolvedUrl("assets/icons/dux-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg").toString().replace("file://", "");
         // One action, not two: `default` is what a click on the body triggers,
         // and naming a second one only added a duplicate button next to it.
         // The body line is optional — an empty argument would draw an empty
         // line, so the two shapes are separate calls.
-        Quickshell.execDetached(["sh", "-c", "if [ -n \"$4\" ]; then chosen=$(notify-send -a 'Dank Software Depot' -i \"$1\" -A default=\"$2\" \"$3\" \"$4\"); else chosen=$(notify-send -a 'Dank Software Depot' -i \"$1\" -A default=\"$2\" \"$3\"); fi; [ -n \"$chosen\" ] && dms ipc call dankSoftwareDepot open", "notify", iconFile, Tr.t("Open"), summary, body || ""]);
+        Quickshell.execDetached(["sh", "-c", "if [ -n \"$4\" ]; then chosen=$(notify-send -a 'Dux Software Depot' -i \"$1\" -A default=\"$2\" \"$3\" \"$4\"); else chosen=$(notify-send -a 'Dux Software Depot' -i \"$1\" -A default=\"$2\" \"$3\"); fi; [ -n \"$chosen\" ] && dms ipc call dankSoftwareDepot open", "notify", iconFile, Tr.t("Open"), summary, body || ""]);
     }
 
     // A new version of the plugin deserves the same courtesy as new packages:
@@ -1825,7 +1828,7 @@ PluginComponent {
                             spacing: 0
 
                             StyledText {
-                                text: "Dank Software Depot"
+                                text: "Dux Software Depot"
                                 font.bold: true
                                 font.pixelSize: Theme.fontSizeLarge
                                 color: Theme.surfaceText

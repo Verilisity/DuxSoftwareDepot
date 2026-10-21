@@ -2144,9 +2144,11 @@ def run_dashboard():
         pass
     out["osPretty"] = pretty
 
-    # Dank logo from the running shell (path changes per shell version)
+    # DMS logo from the running shell (path changes per shell version; Dux
+    # Shell 2.0 unpacks under dms-shell/, older versions under danklinux-shell/)
     runtime = os.environ.get("XDG_RUNTIME_DIR", "/run/user/1000")
-    logos = glob.glob(os.path.join(runtime, "danklinux-shell", "*", "assets", "danklogo.svg"))
+    logos = [path for shell_dir in ("dms-shell", "danklinux-shell")
+             for path in glob.glob(os.path.join(runtime, shell_dir, "*", "assets", "danklogo.svg"))]
     out["dankLogo"] = logos[0] if logos else ""
 
     json.dump(out, sys.stdout)

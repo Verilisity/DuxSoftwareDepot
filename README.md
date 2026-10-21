@@ -1,7 +1,7 @@
-# <picture><source media="(prefers-color-scheme: dark)" srcset="assets/icons/dank-software-depot-dark.svg"><img src="assets/icons/dank-software-depot-light.svg" alt="" width="42"></picture> Dank Software Depot
+# <picture><source media="(prefers-color-scheme: dark)" srcset="assets/icons/dux-software-depot-dark.svg"><img src="assets/icons/dux-software-depot-light.svg" alt="" width="42"></picture> Dux Software Depot
 
-[![Release](https://img.shields.io/github/v/release/vinceecniv/DankSoftwareDepot?label=release&color=6750A4)](https://github.com/vinceecniv/DankSoftwareDepot/releases)
-[![Checks](https://github.com/vinceecniv/DankSoftwareDepot/actions/workflows/checks.yml/badge.svg)](https://github.com/vinceecniv/DankSoftwareDepot/actions/workflows/checks.yml)
+[![Release](https://img.shields.io/github/v/release/vinceecniv/DuxSoftwareDepot?label=release&color=6750A4)](https://github.com/vinceecniv/DuxSoftwareDepot/releases)
+[![Checks](https://github.com/vinceecniv/DuxSoftwareDepot/actions/workflows/checks.yml/badge.svg)](https://github.com/vinceecniv/DuxSoftwareDepot/actions/workflows/checks.yml)
 [![License](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 ![Status](https://img.shields.io/badge/status-beta-orange)
 ![DMS](https://img.shields.io/badge/DMS-%E2%89%A5%201.6-6750A4)
@@ -15,11 +15,17 @@
 ![Homebrew](https://img.shields.io/badge/Homebrew-4A4458)
 
 A full software & updates center plugin for
-[DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell):
+[Dux Shell](https://github.com/duxlabs-dev/dux-shell) (DMS, formerly
+DankMaterialShell):
 everything the built-in updater does, plus app logos, release notes, reviews,
 honest per-package progress, an app store, [full AppImage
 management](#appimages-end-to-end), firmware support and an action log — and no
 terminal output anywhere.
+
+Until October 2026 this plugin was called **Dank Software Depot**; it follows
+the shell's rename, with Dux Labs' blessing. It is a community plugin, not a
+Dux Labs project. Existing installs keep working and keep their settings: the
+plugin id is still `dankSoftwareDepot`.
 
 ![The Updates tab: pending updates as cards, graded by severity, with a size
 and removal summary above Update All](screenshot.png)
@@ -181,7 +187,7 @@ and offers to replace it](screenshots/appimage-install.png)
   completed/planned during a run, and turns into a restart icon when a reboot
   is recommended
 - **The popout** has the enriched list, Update All, and the phase and item
-  during a run. A check pulses the Dank logo rather than replacing it
+  during a run. A check pulses the DMS logo rather than replacing it
 - Optionally: hide the pill when up to date, or have a click open the window
 
 ## Settings & command palette
@@ -252,12 +258,20 @@ summaries and the icons in your desktop entries, so apps still look like apps.
 ## Install
 
 ```bash
-git clone https://github.com/vinceecniv/DankSoftwareDepot ~/.config/DankMaterialShell/plugins/dankSoftwareDepot
+dms plugins install dankSoftwareDepot
 dms restart
 ```
 
-Enable **Dank Software Depot** in DMS Settings → Plugins, then add the widget
-to a DankBar layout.
+Or by hand — `~/.config/dms` since Dux Shell 2.0, `~/.config/DankMaterialShell`
+before it:
+
+```bash
+git clone https://github.com/vinceecniv/DuxSoftwareDepot ~/.config/dms/plugins/dankSoftwareDepot
+dms restart
+```
+
+Enable **Dux Software Depot** in DMS Settings → Plugins; its settings page puts
+the widget on the bar.
 
 To launch it from the app launcher, let the app place the entry: the Updates
 tab offers it once, and **Settings → Show in app launcher** toggles it any
@@ -269,19 +283,21 @@ running.
 <summary>The same by hand</summary>
 
 ```bash
-sed "s|@OPEN@|$PWD/scripts/open.sh|" com.danklinux.dankSoftwareDepot.desktop \
-  > ~/.local/share/applications/com.danklinux.dankSoftwareDepot.desktop
+sed "s|@OPEN@|$PWD/scripts/open.sh|" io.github.vinceecniv.DuxSoftwareDepot.desktop \
+  > ~/.local/share/applications/io.github.vinceecniv.DuxSoftwareDepot.desktop
 chmod +x scripts/open.sh
-install -Dm644 assets/icons/dank-software-depot-dark.svg \
-  ~/.local/share/icons/hicolor/scalable/apps/dank-software-depot.svg
-install -Dm644 assets/icons/dank-software-depot-symbolic.svg \
-  ~/.local/share/icons/hicolor/symbolic/apps/dank-software-depot-symbolic.svg
+install -Dm644 assets/icons/dux-software-depot-dark.svg \
+  ~/.local/share/icons/hicolor/scalable/apps/dux-software-depot.svg
+install -Dm644 assets/icons/dux-software-depot-symbolic.svg \
+  ~/.local/share/icons/hicolor/symbolic/apps/dux-software-depot-symbolic.svg
 update-desktop-database ~/.local/share/applications
 ```
 
 The icon step is not optional: the entry names an icon, and without it the
 launcher shows a blank one. An entry written by an older version of the plugin
-is rewritten once, automatically, the next time the window opens.
+is rewritten once, automatically, the next time the window opens — including
+one from before the rename, which is replaced by the new name along with its
+icon and any .appimage association.
 
 </details>
 
@@ -343,14 +359,14 @@ anything about you leaves the machine:
 Two links, and they cost nothing:
 
 - **[Upvote it in the DMS plugin
-  directory](https://github.com/AvengeMedia/dms-plugin-registry/issues/720)** —
+  directory](https://github.com/duxlabs-dev/dux-plugin-registry/issues/720)** —
   a 👍 on the registry issue. That reaction count is how the directory knows
   which plugins people actually run.
-- **[Star the repository](https://github.com/vinceecniv/DankSoftwareDepot)** —
+- **[Star the repository](https://github.com/vinceecniv/DuxSoftwareDepot)** —
   if it is doing its job on your machine.
 
 Bug reports and feature requests are welcome as
-[issues](https://github.com/vinceecniv/DankSoftwareDepot/issues) — the
+[issues](https://github.com/vinceecniv/DuxSoftwareDepot/issues) — the
 templates ask for the distribution and the versions, because with four package
 managers behind this thing that is usually what decides where the fault is.
 

@@ -66,6 +66,9 @@ jobs:
       - name: AppImage replaced outside the depot
         run: python3 scripts/test_appimage_updates.py
 
+      - name: The .appimage association survives the rename
+        run: python3 scripts/test_handler_migrate.py
+
       - name: The shell snippets run under dash, not just bash
         run: python3 scripts/test_shell_portability.py
 

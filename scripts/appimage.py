@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AppImage management for Dank Software Depot (Gearlever-style).
+"""AppImage management for Dux Software Depot (Gearlever-style).
 
 AppImages live in ~/Applications; each install gets a desktop entry and an
 icon extracted from the image, and a record in
@@ -20,6 +20,7 @@ Modes:
   --replace <id> <path>            put this file in place of a registered app
   --handler-status                 are we the default for .appimage? (JSON)
   --handler-set / --handler-clear  become that default, or stop being it
+  --handler-migrate                move an association from the pre-rename entry name
 """
 import glob
 import json
@@ -864,7 +865,10 @@ def run_replace(app_id, path):
 # only our own name in and out of mimeapps.list.
 
 APPIMAGE_MIME_TYPES = ("application/vnd.appimage", "application/x-iso9660-appimage")
-DEPOT_DESKTOP = "com.danklinux.dankSoftwareDepot.desktop"
+DEPOT_DESKTOP = "io.github.vinceecniv.DuxSoftwareDepot.desktop"
+# The entry's name as Dank Software Depot; --handler-migrate carries an
+# association that still names it over to the new one
+LEGACY_DESKTOP = "com.danklinux.dankSoftwareDepot.desktop"
 MIMEAPPS = os.path.expanduser("~/.config/mimeapps.list")
 
 
@@ -926,17 +930,43 @@ def run_handler_clear():
             continue
         for mime in APPIMAGE_MIME_TYPES:
             current = _entries(parser.get(section, mime, fallback=""))
-            if DEPOT_DESKTOP not in current:
+            ours = [e for e in current if e in (DEPOT_DESKTOP, LEGACY_DESKTOP)]
+            if not ours:
                 continue
             # Only our own name goes: another handler on the same line was
             # someone else's choice and stays theirs
-            current.remove(DEPOT_DESKTOP)
+            current = [e for e in current if e not in ours]
             if current:
                 parser.set(section, mime, ";".join(current) + ";")
             else:
                 parser.remove_option(section, mime)
     _write_mimeapps(parser)
     json.dump({"ok": True}, sys.stdout)
+
+
+def run_handler_migrate():
+    """Rename the legacy entry to the current one wherever mimeapps.list
+    names it, in place, so a default stays the default and its position
+    among other handlers is kept. Nothing named it: nothing is written."""
+    parser = _read_mimeapps()
+    changed = False
+    for section in ("Default Applications", "Added Associations"):
+        if not parser.has_section(section):
+            continue
+        for mime in APPIMAGE_MIME_TYPES:
+            current = _entries(parser.get(section, mime, fallback=""))
+            if LEGACY_DESKTOP not in current:
+                continue
+            renamed = []
+            for e in current:
+                e = DEPOT_DESKTOP if e == LEGACY_DESKTOP else e
+                if e not in renamed:
+                    renamed.append(e)
+            parser.set(section, mime, ";".join(renamed) + ";")
+            changed = True
+    if changed:
+        _write_mimeapps(parser)
+    json.dump({"ok": True, "changed": changed}, sys.stdout)
 
 
 def main():
@@ -967,6 +997,8 @@ def main():
         run_handler_status()
     elif mode == "--handler-set":
         run_handler_set()
+    elif mode == "--handler-migrate":
+        run_handler_migrate()
     elif mode == "--handler-clear":
         run_handler_clear()
     elif mode == "--uninstall" and len(args) >= 2:

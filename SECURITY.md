@@ -8,7 +8,7 @@ worth a careful report.
 ## Reporting
 
 Use GitHub's private reporting:
-**[Report a vulnerability](https://github.com/vinceecniv/DankSoftwareDepot/security/advisories/new)**.
+**[Report a vulnerability](https://github.com/vinceecniv/DuxSoftwareDepot/security/advisories/new)**.
 It opens a private advisory that only you and the maintainer can see.
 
 Please do not open a public issue for something exploitable. This is a
@@ -40,8 +40,8 @@ there are no backports to earlier versions.
 
 ## Not in scope
 
-- DankMaterialShell, the DMS update daemon and its polkit policy — report
-  those at [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)
+- Dux Shell (DMS), its update daemon and its polkit policy — report
+  those at [Dux Shell](https://github.com/duxlabs-dev/dux-shell)
 - Vulnerabilities in dnf, rpm-ostree, apt, pacman, flatpak or fwupd themselves
 - Vulnerabilities in the software you install with it
 - The third-party services it reads from (ODRS, Flathub, LVFS, appimage.github.io)

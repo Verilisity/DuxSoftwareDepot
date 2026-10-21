@@ -13,7 +13,7 @@
 
 set -u
 
-APP_NAME="Dank Software Depot"
+APP_NAME="Dux Software Depot"
 
 # A launcher hands down the session's PATH, which is routinely shorter than
 # the one an interactive shell builds from the profile — and `dms ipc` needs
@@ -25,7 +25,7 @@ export PATH
 
 say() {
     if command -v notify-send >/dev/null 2>&1; then
-        notify-send -a "$APP_NAME" -i dank-software-depot "$APP_NAME" "$1"
+        notify-send -a "$APP_NAME" -i dux-software-depot "$APP_NAME" "$1"
     fi
     echo "$APP_NAME: $1" >&2
     exit 1
@@ -57,4 +57,4 @@ else
     answer=$("$dms_bin" ipc call dankSoftwareDepot open 2>&1)
 fi
 
-[ -z "$answer" ] || say "The shell did not take the request: $answer — is DankMaterialShell running with the Dank Software Depot plugin enabled?"
+[ -z "$answer" ] || say "The shell did not take the request: $answer — is Dux Shell running with the Dux Software Depot plugin enabled?"

@@ -153,7 +153,7 @@ PluginSettings {
                         anchors.margins: 4
                         // The app's own icon, as the window and the bar use it;
                         // the path #21 put here never existed
-                        source: Qt.resolvedUrl("assets/icons/dank-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
+                        source: Qt.resolvedUrl("assets/icons/dux-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
                         sourceSize.width: 80
                         sourceSize.height: 80
                         fillMode: Image.PreserveAspectFit
@@ -166,7 +166,7 @@ PluginSettings {
                     spacing: 2
 
                     StyledText {
-                        text: "Dank Software Depot"
+                        text: "Dux Software Depot"
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.DemiBold
                         color: Theme.surfaceText
@@ -223,7 +223,7 @@ PluginSettings {
                     }
 
                     StyledText {
-                        text: Tr.t("Open Dank Software Depot")
+                        text: Tr.t("Open Dux Software Depot")
                         font.pixelSize: Theme.fontSizeSmall
                         font.weight: Font.Medium
                         color: Ui.buttonInk("filled")

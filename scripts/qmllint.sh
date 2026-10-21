@@ -18,9 +18,11 @@
 #        so it follows the working tree you are standing in, worktrees included)
 set -e
 
-root=$(ls -d "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"/danklinux-shell/*/ 2>/dev/null | head -1)
+# Dux Shell 2.0 unpacks under dms-shell/, older versions under danklinux-shell/
+runtime=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+root=$(for d in dms-shell danklinux-shell; do ls -d "$runtime/$d"/*/ 2>/dev/null || true; done | head -1)
 if [ -z "$root" ]; then
-    echo "no running DMS found under \$XDG_RUNTIME_DIR/danklinux-shell — start the shell first" >&2
+    echo "no running DMS found under \$XDG_RUNTIME_DIR/dms-shell or danklinux-shell — start the shell first" >&2
     exit 2
 fi
 

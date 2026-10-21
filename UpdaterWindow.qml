@@ -465,7 +465,7 @@ FloatingWindow {
         }
     }
     property var pluginManifest: ({})
-    readonly property string githubUrl: "https://github.com/vinceecniv/DankSoftwareDepot"
+    readonly property string githubUrl: "https://github.com/vinceecniv/DuxSoftwareDepot"
 
     FileView {
         path: Qt.resolvedUrl("plugin.json")
@@ -625,7 +625,7 @@ FloatingWindow {
         // rather than curl, which is not a dependency.
         command: [Backend.python, "-c", [
             "import os, sys, urllib.request",
-            "if os.path.islink(os.path.expanduser('~/.config/DankMaterialShell/plugins/dankSoftwareDepot')): sys.exit(3)",
+            "if any(os.path.islink(os.path.expanduser('~/.config/' + d + '/plugins/dankSoftwareDepot')) for d in ('dms', 'DankMaterialShell')): sys.exit(3)",
             "def get(url):",
             "    try:",
             "        with urllib.request.urlopen(url, timeout=15) as resp: return resp.read().decode('utf-8', 'replace')",
@@ -1815,7 +1815,7 @@ FloatingWindow {
                                             spacing: 2
 
                                             StyledText {
-                                                text: "Dank Software Depot"
+                                                text: "Dux Software Depot"
                                                 font.pixelSize: Theme.fontSizeMedium
                                                 font.weight: Font.DemiBold
                                                 color: Theme.surfaceText
@@ -1831,7 +1831,7 @@ FloatingWindow {
 
                                     StyledText {
                                         Layout.fillWidth: true
-                                        text: win.pluginManifest.description ? Tr.t(win.pluginManifest.description) : Tr.t("Visual updater and software hub for DankMaterialShell.")
+                                        text: win.pluginManifest.description ? Tr.t(win.pluginManifest.description) : Tr.t("Visual updater and software hub for Dux Shell.")
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.surfaceText
                                         wrapMode: Text.WordWrap
@@ -2295,7 +2295,7 @@ FloatingWindow {
         return Tr.t("%1d ago").arg(Math.round(delta / 86400));
     }
 
-    title: "Dank Software Depot"
+    title: "Dux Software Depot"
     minimumSize: Qt.size(560, 420)
     implicitWidth: 760
     implicitHeight: 640
@@ -2340,7 +2340,7 @@ FloatingWindow {
     }
 
     // Own app icon, following the active light/dark theme
-    readonly property url appIconSource: Qt.resolvedUrl("assets/icons/dank-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
+    readonly property url appIconSource: Qt.resolvedUrl("assets/icons/dux-software-depot-" + (Theme.isLightMode ? "light" : "dark") + ".svg")
 
     // ── Dashboard data (up-to-date empty state) ─────────────────────────────
     property var dashboard: null
@@ -3242,7 +3242,7 @@ FloatingWindow {
                         spacing: Theme.spacingS
 
                         StyledText {
-                            text: "Dank Software Depot"
+                            text: "Dux Software Depot"
                             font.pixelSize: Theme.fontSizeXLarge
                             font.weight: Font.Medium
                             color: Theme.surfaceText
@@ -3784,7 +3784,7 @@ FloatingWindow {
 
                     StyledText {
                         Layout.fillWidth: true
-                        text: Backend.launcherEntryBusy ? Tr.t("Adding to the launcher…") : Tr.t("Open Dank Software Depot from your app launcher? A desktop entry and icon are placed in your own home directory.")
+                        text: Backend.launcherEntryBusy ? Tr.t("Adding to the launcher…") : Tr.t("Open Dux Software Depot from your app launcher? A desktop entry and icon are placed in your own home directory.")
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceText
                         wrapMode: Text.WordWrap
@@ -3871,7 +3871,7 @@ FloatingWindow {
                     StyledText {
                         Layout.fillWidth: true
                         textFormat: Text.StyledText
-                        text: Tr.t("Dank Software Depot %1 is available").arg("<b>" + win.selfUpdateVersion + "</b>")
+                        text: Tr.t("Dux Software Depot %1 is available").arg("<b>" + win.selfUpdateVersion + "</b>")
                         font.pixelSize: Theme.fontSizeMedium
                         font.weight: Font.Medium
                         color: Theme.surfaceText
@@ -5307,7 +5307,7 @@ FloatingWindow {
                                             { label: Tr.t("Held"), value: String((root.heldSystemKeys || []).length + (SettingsData.updaterIgnoredPackages || []).length) },
                                             { label: "End-of-life", value: String((root.eolRefs || []).length) },
                                             { label: Tr.t("Automatic updates"), value: autoLabels[root.autoUpdateMode] || Tr.t("Off") },
-                                            { label: "Dank Software Depot", value: win.pluginManifest.version ? "v" + win.pluginManifest.version : "" }
+                                            { label: "Dux Software Depot", value: win.pluginManifest.version ? "v" + win.pluginManifest.version : "" }
                                         ].filter(row => row.value !== "");
                                     }
 

@@ -17,7 +17,7 @@ import qs.Widgets
 GridLayout {
     // The repository the star chip points at; the About popup passes the one
     // it already reads out of plugin.json
-    property string repoUrl: "https://github.com/vinceecniv/DankSoftwareDepot"
+    property string repoUrl: "https://github.com/vinceecniv/DuxSoftwareDepot"
 
     // A layout computes its own implicit height and overwrites anything set
     // here, so a parent that sizes itself from implicitHeight cannot learn it
@@ -41,7 +41,7 @@ GridLayout {
                 text: Tr.t("Upvote plugin in Directory"),
                 icon: "thumb_up",
                 accent: Theme.primary,
-                url: "https://github.com/AvengeMedia/dms-plugin-registry/issues/720"
+                url: "https://github.com/duxlabs-dev/dux-plugin-registry/issues/720"
             },
             {
                 text: Tr.t("Star on GitHub"),

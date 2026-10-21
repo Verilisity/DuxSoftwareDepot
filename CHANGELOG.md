@@ -5,6 +5,20 @@ in-app when the plugin offers its own update.
 
 ## Unreleased
 
+- **Dank Software Depot is now Dux Software Depot.** DankMaterialShell
+  became Dux Shell with 2.0, and the plugin follows, with Dux Labs' blessing.
+  Nothing to do on your side: settings, holds, the action log and your
+  AppImages carry over, and the bar widget stays where it is. An app
+  launcher entry is renamed along with its icon, and if the depot opens
+  .appimage files, it still does.
+
+- **Ready for Dux Shell 2.0.** The shell's logo next to its own packages and
+  on the Updates tab disappeared under 2.0, which keeps the running shell
+  somewhere else; it is found in either place now. The plugin also
+  recognises the new configuration folder and the package names Dux Labs
+  suggests to packagers (`dux-shell`, `dux-greeter`), so the shell's own
+  update still runs last, after everything else.
+
 - **Updates apt keeps back are held instead of failing.** On Debian and
   Ubuntu, `apt-get upgrade` leaves an update alone when it needs a new
   package, when an installed package does not allow the new version — dms

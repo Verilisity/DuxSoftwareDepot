@@ -136,7 +136,8 @@ Item {
 
     Process {
         running: true
-        command: ["sh", "-c", "[ -L \"$HOME/.config/DankMaterialShell/plugins/dankSoftwareDepot\" ] && echo yes || echo no"]
+        // ~/.config/dms since Dux Shell 2.0, ~/.config/DankMaterialShell before
+        command: ["sh", "-c", "[ -L \"$HOME/.config/dms/plugins/dankSoftwareDepot\" ] || [ -L \"$HOME/.config/DankMaterialShell/plugins/dankSoftwareDepot\" ] && echo yes || echo no"]
 
         stdout: StdioCollector {
             onStreamFinished: backend.developmentInstall = (text || "").trim() === "yes"
@@ -796,10 +797,15 @@ Item {
 
     // The plugin's own directory, wherever the shell loaded it from
     readonly property string pluginDir: Qt.resolvedUrl(".").toString().replace("file://", "").replace(/\/$/, "")
-    readonly property string launcherEntryName: "com.danklinux.dankSoftwareDepot.desktop"
+    readonly property string launcherEntryName: "io.github.vinceecniv.DuxSoftwareDepot.desktop"
+    // What the entry and its icon were called as Dank Software Depot. An
+    // install that still has them is moved over once: entry, icons, and the
+    // .appimage association in mimeapps.list, which names the entry file.
+    readonly property string legacyLauncherEntryName: "com.danklinux.dankSoftwareDepot.desktop"
+    readonly property string _legacyEntryCleanup: "rm -f \"$apps/" + legacyLauncherEntryName + "\" \"$icons/scalable/apps/dank-software-depot.svg\" \"$icons/symbolic/apps/dank-software-depot-symbolic.svg\""
 
     // Must match X-DSD-Entry-Version in the .desktop file
-    readonly property string launcherEntryVersion: "2"
+    readonly property string launcherEntryVersion: "3"
 
     property bool launcherEntryPresent: false
     // Until the first check answers, the UI should claim neither state
@@ -815,7 +821,8 @@ Item {
         if (launcherCheckProcess.running)
             return;
         launcherCheckProcess._stamp = "";
-        launcherCheckProcess.command = ["sh", "-c", "f=\"$HOME/.local/share/applications/" + launcherEntryName + "\"; test -f \"$f\" || exit 1; sed -n 's/^X-DSD-Entry-Version=//p' \"$f\" | head -1"];
+        // Only the legacy entry there: present, but stale, so it gets rewritten
+        launcherCheckProcess.command = ["sh", "-c", "apps=\"$HOME/.local/share/applications\"; f=\"$apps/" + launcherEntryName + "\"; if [ ! -f \"$f\" ]; then [ -f \"$apps/" + legacyLauncherEntryName + "\" ] && echo legacy && exit 0; exit 1; fi; sed -n 's/^X-DSD-Entry-Version=//p' \"$f\" | head -1"];
         launcherCheckProcess.running = true;
     }
 
@@ -825,7 +832,7 @@ Item {
     // call `dms` by name, which a launcher looks up in the session PATH
     // rather than the one a terminal builds, and when it was not there,
     // clicking the entry did nothing whatsoever.
-    readonly property string _entryInstallCommand: "set -e; src='" + pluginDir + "'; apps=\"$HOME/.local/share/applications\"; icons=\"$HOME/.local/share/icons/hicolor\"; mkdir -p \"$apps\"; chmod +x \"$src/scripts/open.sh\"; sed \"s|@OPEN@|$src/scripts/open.sh|\" \"$src/" + launcherEntryName + "\" > \"$apps/" + launcherEntryName + "\"; chmod 644 \"$apps/" + launcherEntryName + "\"; install -Dm644 \"$src/assets/icons/dank-software-depot-dark.svg\" \"$icons/scalable/apps/dank-software-depot.svg\"; install -Dm644 \"$src/assets/icons/dank-software-depot-symbolic.svg\" \"$icons/symbolic/apps/dank-software-depot-symbolic.svg\"; update-desktop-database \"$apps\" 2>/dev/null || true"
+    readonly property string _entryInstallCommand: "set -e; src='" + pluginDir + "'; apps=\"$HOME/.local/share/applications\"; icons=\"$HOME/.local/share/icons/hicolor\"; mkdir -p \"$apps\"; chmod +x \"$src/scripts/open.sh\"; sed \"s|@OPEN@|$src/scripts/open.sh|\" \"$src/" + launcherEntryName + "\" > \"$apps/" + launcherEntryName + "\"; chmod 644 \"$apps/" + launcherEntryName + "\"; install -Dm644 \"$src/assets/icons/dux-software-depot-dark.svg\" \"$icons/scalable/apps/dux-software-depot.svg\"; install -Dm644 \"$src/assets/icons/dux-software-depot-symbolic.svg\" \"$icons/symbolic/apps/dux-software-depot-symbolic.svg\"; " + _legacyEntryCleanup + "; '" + python + "' \"$src/scripts/appimage.py\" --handler-migrate >/dev/null || true; update-desktop-database \"$apps\" 2>/dev/null || true"
 
     function installLauncherEntry() {
         if (launcherEntryBusy)
@@ -843,7 +850,7 @@ Item {
         launcherEntryError = "";
         launcherEntryBusy = true;
         launcherProcess._output = "";
-        launcherProcess.command = ["sh", "-c", "apps=\"$HOME/.local/share/applications\"; icons=\"$HOME/.local/share/icons/hicolor\"; rm -f \"$apps/" + launcherEntryName + "\" \"$icons/scalable/apps/dank-software-depot.svg\" \"$icons/symbolic/apps/dank-software-depot-symbolic.svg\"; update-desktop-database \"$apps\" 2>/dev/null || true"];
+        launcherProcess.command = ["sh", "-c", "apps=\"$HOME/.local/share/applications\"; icons=\"$HOME/.local/share/icons/hicolor\"; rm -f \"$apps/" + launcherEntryName + "\" \"$icons/scalable/apps/dux-software-depot.svg\" \"$icons/symbolic/apps/dux-software-depot-symbolic.svg\"; " + _legacyEntryCleanup + "; update-desktop-database \"$apps\" 2>/dev/null || true"];
         launcherProcess.running = true;
     }
 
