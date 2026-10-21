@@ -27,8 +27,8 @@ the shell's rename, with Dux Labs' blessing. It is a community plugin, not a
 Dux Labs project. Existing installs keep working and keep their settings: the
 plugin id is still `dankSoftwareDepot`.
 
-![The Updates tab: pending updates as cards, graded by severity, with a size
-and removal summary above Update All](screenshot.png)
+![The Updates tab: pending system packages as cards, each with its old and new
+version, above Update All](screenshot.png)
 
 Built on the DMS system update service: the `dms` daemon does update detection,
 and polkit prompts appear through the DMS agent.
@@ -152,7 +152,7 @@ chip](screenshots/firmware-devices.png)
   its numbers rather than as a finished sentence
 - Searchable, and kept for two years
 
-| ![The Log tab: a timeline of update runs, installs and removals, with a notice about packages changed outside the app](screenshots/log-history.png) | ![A changelog popup listing the CVEs a Chromium update closes](screenshots/security-changelog.png) |
+| ![The Log tab: a timeline of update runs, installs and removals, with a notice about packages changed outside the app](screenshots/log-history.png) | ![The details popup for a Firefox update: description, a critical security fix, and what is new](screenshots/security-changelog.png) |
 |---|---|
 | **What happened, and when.** Grouped by day, with the packages that changed outside this app called out separately. | **What an entry closes.** Release notes and rpm changelogs, CVE numbers included, read from what is already on the machine. |
 

@@ -1785,7 +1785,7 @@ Item {
 
                                         StyledText {
                                             visible: (modelData.date || 0) > 0
-                                            text: modelData.date > 0 ? new Date(modelData.date * 1000).toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+                                            text: modelData.date > 0 ? new Date(modelData.date * 1000).toLocaleDateString(Tr.locale, Locale.ShortFormat) : ""
                                             font.pixelSize: Theme.fontSizeSmall - 1
                                             color: Theme.surfaceVariantText
                                         }
@@ -1893,7 +1893,7 @@ Item {
 
                                         StyledText {
                                             visible: (modelData.date || 0) > 0
-                                            text: modelData.date > 0 ? new Date(modelData.date * 1000).toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+                                            text: modelData.date > 0 ? new Date(modelData.date * 1000).toLocaleDateString(Tr.locale, Locale.ShortFormat) : ""
                                             font.pixelSize: Theme.fontSizeSmall - 1
                                             color: Theme.surfaceVariantText
                                         }

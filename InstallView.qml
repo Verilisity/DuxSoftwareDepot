@@ -110,6 +110,24 @@ Item {
         });
     }
 
+    // For the screenshots: an app from the front page whose details have
+    // something to show — the one named if it is there, else the most
+    // popular app with screenshots.
+    function showcaseEntry(preferredName) {
+        const all = (sections[0] || {}).items || [];
+        const wanted = (preferredName || "").toLowerCase();
+        return all.find(item => (item.name || "").toLowerCase() === wanted)
+            || all.find(item => (item.screenshots || []).length > 0)
+            || all[0] || null;
+    }
+
+    readonly property bool detailsLoading: detailsDialog.loading
+
+    function closeDialogs() {
+        detailsDialog.close();
+        offerDialog.close();
+    }
+
     // ── Which source ─────────────────────────────────────────────────────────
     function openSourcePicker(entry) {
         sourcePicker.pickerEntry = entry;

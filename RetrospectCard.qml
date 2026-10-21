@@ -128,7 +128,7 @@ Item {
         if (seconds < 36 * 3600)
             return Tr.t("%1 hours").arg(Math.round(seconds / 3600));
         const days = Math.round(seconds / 8640) / 10;
-        const text = days % 1 === 0 ? String(days) : Number(days).toLocaleString(Qt.locale(), 'f', 1);
+        const text = days % 1 === 0 ? String(days) : Number(days).toLocaleString(Tr.locale, 'f', 1);
         return Tr.t("%1 days").arg(text);
     }
 
@@ -136,7 +136,7 @@ Item {
         const parts = (key || "").split("-");
         if (parts.length !== 2)
             return "";
-        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 1).toLocaleDateString(Qt.locale(), "MMMM yyyy");
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10), 1).toLocaleDateString(Tr.locale, "MMMM yyyy");
     }
 
     implicitHeight: worthShowing ? column.implicitHeight + Theme.spacingM * 2 : 0
@@ -183,7 +183,7 @@ Item {
             // lie by omission; the period it really covers is part of it
             StyledText {
                 visible: card.stats.earliest > 0 && (Date.now() / 1000 - card.stats.earliest) < (card.periodDays - 7) * 86400
-                text: Tr.t("as far back as the log goes — %1").arg(new Date(card.stats.earliest * 1000).toLocaleDateString(Qt.locale(), Locale.ShortFormat))
+                text: Tr.t("as far back as the log goes — %1").arg(new Date(card.stats.earliest * 1000).toLocaleDateString(Tr.locale, Locale.ShortFormat))
                 font.pixelSize: Theme.fontSizeSmall - 1
                 color: Theme.surfaceVariantText
             }
@@ -255,7 +255,7 @@ Item {
                 },
                 {
                     show: card.stats.biggestRun > 1 && card.stats.biggestRun < card.stats.updated,
-                    text: Tr.t("the biggest run was %1 packages, on %2").arg(card.stats.biggestRun).arg(new Date(card.stats.biggestRunTs * 1000).toLocaleDateString(Qt.locale(), Locale.ShortFormat))
+                    text: Tr.t("the biggest run was %1 packages, on %2").arg(card.stats.biggestRun).arg(new Date(card.stats.biggestRunTs * 1000).toLocaleDateString(Tr.locale, Locale.ShortFormat))
                 },
                 {
                     show: card.stats.busiestCount > 0 && card.stats.updated > card.stats.busiestCount,

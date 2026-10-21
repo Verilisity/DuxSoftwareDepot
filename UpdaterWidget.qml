@@ -1403,10 +1403,39 @@ PluginComponent {
             return Ui.benchResult;
         }
 
+        // The README screenshots, in English, over a recording built from the
+        // action log. scripts/screenshots.py is what calls this — it builds
+        // those recordings, sizes the window and frames the result; the JSON
+        // is ScreenshotDirector.start's options.
+        function shots(options: string): string {
+            if (!screenshotLoader.item)
+                return "screenshots are only available on a working copy";
+            let opts;
+            try {
+                opts = JSON.parse(options);
+            } catch (e) {
+                return "options must be JSON: " + e;
+            }
+            return screenshotLoader.item.start(opts);
+        }
+
+        function shotstatus(): string {
+            const item = screenshotLoader.item;
+            return item ? (item.running ? "running " : "") + item.status + (item.running ? "" : " | " + item.written.join(" ")) : "unavailable";
+        }
+
         function recordings(): string {
             Backend.refreshRecordings();
             const rows = (Backend.recordings || []).map(r => r.name + " (" + r.packages + " packages, " + r.seconds + "s, " + (r.tags || []).join("+") + ")");
             return rows.length > 0 ? rows.join("\n") : "nothing recorded yet in " + Backend.recordingsRoot;
+        }
+    }
+
+    Loader {
+        id: screenshotLoader
+        active: Backend.developmentInstall
+        sourceComponent: ScreenshotDirector {
+            window: updaterWindow
         }
     }
 

@@ -162,3 +162,44 @@ for the other files the widget instantiates — `MetadataStore.qml`, say: the
 reload builds the new `UpdaterWidget.qml` on the type compiled earlier, so a
 function added to the store does not exist yet, and a binding that calls it
 evaluates to `undefined` without a word in the log.
+
+## Screenshots
+
+The README's pictures are made by the plugin itself, so they can be brought
+up to date in one command instead of thirteen sessions with a screenshot
+tool:
+
+```sh
+python3 scripts/screenshots.py          # light mode; --dark for dark
+```
+
+It needs a working copy (the same symlink test as above), a running shell
+with the plugin enabled, and Pillow. What it does:
+
+- **English, whatever the machine speaks.** `Tr.forcedLang` overrides the
+  catalog, the fallback to DMS's own catalog and the date formats, and a
+  file in the runtime dir (`dsd-lang`) tells `enrich.py` to pick English
+  AppStream text. Both are undone at the end, also when a step fails.
+- **Pending updates from the action log.** `simulate.py from-log` turns the
+  newest updates the log records into `recordings/screenshots-demo`, played
+  as a replay so the Updates tab and its details popup have something to
+  show; `screenshots-empty` gives the up-to-date dashboard. The run in
+  progress plays a real recording: the one with the most packages up to 50,
+  or `--run NAME`.
+- **Light mode and a fixed size.** The shell is switched to light mode and,
+  on niri, the window floats at 883 × 938 for the duration; both go back
+  afterwards. Elsewhere the window is shot at the size it has.
+- **The shots themselves** are taken in QML by `ScreenshotDirector.qml`,
+  one scene after another (`dms ipc call dankSoftwareDepotDev shots …`,
+  `shotstatus` for progress). Each scene waits until it has settled — data
+  loaded, popup filled — and a step that never settles is shot anyway and
+  named in the status. The window's own root item cannot be grabbed from
+  QML (Quickshell creates it in C++, without a QML engine), so
+  `UpdaterWindow.grabWindow` hangs every child under a stage item for the
+  length of one grab.
+- **The frame** — the gradient the hand-made screenshots had, measured from
+  them, rounded corners with transparency, a soft shadow — is added by the
+  script, into `screenshots/` and `screenshot.png`.
+
+Everything else in the pictures is the machine as it is: the installed
+software, the firmware, the log. Look them over before committing.

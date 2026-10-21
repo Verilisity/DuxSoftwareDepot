@@ -128,7 +128,7 @@ Item {
         const yesterday = new Date(now.getTime() - 86400000);
         if (_dayKey(ts) === (yesterday.getFullYear() + "-" + yesterday.getMonth() + "-" + yesterday.getDate()))
             return Tr.t("Yesterday");
-        return d.toLocaleDateString(Qt.locale(), Locale.LongFormat);
+        return d.toLocaleDateString(Tr.locale, Locale.LongFormat);
     }
 
     readonly property var visibleEntries: {

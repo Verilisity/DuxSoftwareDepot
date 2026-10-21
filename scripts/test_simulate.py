@@ -134,6 +134,29 @@ def main():
         ok &= check("and knows which passes each one has",
                     by_name["run-1"]["tags"] == ["system"], json.dumps(listing))
 
+        # The screenshots' pending list, made from the action log: newest
+        # first, each package once, only what the daemon's list carries
+        log = Path(tmp) / "action-log.json"
+        log.write_text(json.dumps([
+            {"type": "update", "ts": 100, "items": [
+                {"name": "Firefox", "id": "firefox", "repo": "system", "from": "1", "to": "2", "status": "done"}]},
+            {"type": "update", "ts": 300, "items": [
+                {"name": "firefox", "repo": "system", "from": "2", "to": "3", "status": "done"},
+                {"name": "kernel", "source": "System", "from": "6.1", "to": "6.2", "status": "done"},
+                {"name": "broken", "repo": "system", "from": "1", "to": "2", "status": "error"},
+                {"name": "org.gimp.GIMP", "repo": "flatpak", "from": "3.0", "to": "3.2", "status": "done"},
+                {"name": "vito", "repo": "appimage", "from": "1", "to": "2", "status": "done"}]},
+            {"type": "install", "ts": 400, "items": [{"name": "vlc", "repo": "system", "to": "3"}]},
+        ]))
+        built = run("from-log", str(root), "demo", str(log), "--count", "4", "--backend", "dnf5")
+        meta = json.loads((root / "demo" / "meta.json").read_text()) if built.returncode == 0 else {}
+        names = [(p["repo"], p["name"], p.get("fromVersion"), p.get("toVersion")) for p in meta.get("packages", [])]
+        ok &= check("the log becomes a pending list, newest first",
+                    names == [("system", "firefox", "2", "3"), ("system", "kernel", "6.1", "6.2"),
+                              ("flatpak", "org.gimp.GIMP", "3.0", "3.2")], repr(names))
+        ok &= check("system packages get the backend asked for",
+                    all(p["backend"] == "dnf5" for p in meta.get("packages", []) if p["repo"] == "system"))
+
     print("\n" + ("all checks passed" if ok else "FAILURES"))
     return 0 if ok else 1
 

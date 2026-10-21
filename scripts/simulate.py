@@ -18,6 +18,7 @@ because installing it is what makes it stop being available.
     simulate.py play   <dir> <tag> [--speed N]
     simulate.py list   <root>
     simulate.py meta   <dir>
+    simulate.py from-log <root> <name> <action-log.json> [--count N] [--backend B]
 
 A recording is a directory:
 
@@ -242,6 +243,54 @@ def cmd_list(root):
     return 0
 
 
+# ── A pending list from the action log ──────────────────────────────────────
+
+# What a log item's "source" says, for entries from before items carried a repo
+_LOG_SOURCES = {"System": "system", "Flatpak": "flatpak"}
+
+
+def packages_from_log(entries, count, backend):
+    """Turn updates the log says were installed into updates still pending.
+
+    For the screenshots: an Updates tab needs something to show, and what
+    this machine actually updated, newest first, looks like what it will
+    update next. Only system packages and Flatpaks — the two the daemon's
+    list carries; AppImages, plugins and firmware arrive by other routes.
+    A quarter of the list is kept for Flatpaks when there are any, so the
+    newest run being thirty kernel packages does not hide that section.
+    """
+    system, flatpak, seen = [], [], set()
+    for entry in sorted(entries, key=lambda e: e.get("ts", 0), reverse=True):
+        if entry.get("type") != "update":
+            continue
+        for item in entry.get("items") or []:
+            repo = item.get("repo") or _LOG_SOURCES.get(item.get("source", ""), "")
+            name = item.get("id") or item.get("name") or ""
+            if repo not in ("system", "flatpak") or not name or item.get("status", "done") != "done":
+                continue
+            if not item.get("from") or not item.get("to") or (repo, name) in seen:
+                continue
+            seen.add((repo, name))
+            (flatpak if repo == "flatpak" else system).append({
+                "name": name, "repo": repo,
+                "backend": "flatpak" if repo == "flatpak" else backend,
+                "fromVersion": item["from"], "toVersion": item["to"],
+            })
+    flat = flatpak[:max(count // 4, 1)] if flatpak and count > 0 else []
+    return system[:count - len(flat)] + flat
+
+
+def cmd_from_log(root, name, log_path, count, backend):
+    try:
+        with open(log_path, encoding="utf-8") as fh:
+            entries = json.load(fh)
+    except (OSError, ValueError) as exc:
+        print(f"cannot read {log_path}: {exc}", file=sys.stderr)
+        return 1
+    packages = packages_from_log(entries if isinstance(entries, list) else [], count, backend)
+    return cmd_begin(root, name, json.dumps(packages))
+
+
 def cmd_meta(directory):
     print(json.dumps(_read_meta(directory), ensure_ascii=False))
     return 0
@@ -271,6 +320,11 @@ def main(argv):
         return cmd_list(argv[2])
     if mode == "meta" and len(argv) >= 3:
         return cmd_meta(argv[2])
+    if mode == "from-log" and len(argv) >= 5:
+        def option(flag, default):
+            return argv[argv.index(flag) + 1] if flag in argv[:-1] else default
+        return cmd_from_log(argv[2], argv[3], argv[4], int(option("--count", "14")),
+                            option("--backend", "dnf5"))
     print(__doc__, file=sys.stderr)
     return 2
 

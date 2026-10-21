@@ -30,3 +30,4 @@ OriginComparison 1.0 OriginComparison.qml
 TintedIconEffect 1.0 TintedIconEffect.qml
 SourcePickerDialog 1.0 SourcePickerDialog.qml
 RetrospectCard 1.0 RetrospectCard.qml
+ScreenshotDirector 1.0 ScreenshotDirector.qml

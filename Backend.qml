@@ -195,7 +195,12 @@ Item {
     onSimModeChanged: _loadSimMeta()
 
     function _loadSimMeta() {
-        if (!replaying) {
+        // Not `replaying`: this runs from the change handlers of the very
+        // properties that binding reads, before the binding has caught up.
+        // Switching replay on read "not replaying" and loaded nothing, and
+        // switching it off read "replaying" and loaded the recording then —
+        // which is how the package list was always one change behind.
+        if (simMode !== "replay" || simRecording === "") {
             simPackages = [];
             simMeta = ({});
             return;
@@ -207,9 +212,19 @@ Item {
         // A recording that had just been switched away from was loaded, and
         // the one actually selected never was. Stop the old request, and let
         // an answer through only if it is still the answer to the question.
-        metaProcess.running = false;
+        //
+        // Stopping is not instant either: `running = false` then `= true` in
+        // one go found the old process still there, so the start was dropped
+        // and nothing was loaded at all. That is what the screenshots ran
+        // into, switching recordings twice in a row. A running request is
+        // stopped, and the new one starts once it has gone.
         metaProcess._for = simRecording;
         metaProcess.command = [python, simulateHelper, "meta", recordingsRoot + "/" + simRecording];
+        if (metaProcess.running) {
+            metaProcess._restart = true;
+            metaProcess.running = false;
+            return;
+        }
         metaProcess.running = true;
     }
 
@@ -217,6 +232,14 @@ Item {
         id: metaProcess
 
         property string _for: ""
+        property bool _restart: false
+
+        onRunningChanged: {
+            if (!running && _restart) {
+                _restart = false;
+                running = true;
+            }
+        }
 
         stderr: StdioCollector {
             onStreamFinished: {
@@ -228,7 +251,7 @@ Item {
         stdout: StdioCollector {
             onStreamFinished: {
                 backend.simDiagnostic = "read " + (text || "").length + " bytes for " + metaProcess._for;
-                if (metaProcess._for !== backend.simRecording || !backend.replaying)
+                if (metaProcess._for !== backend.simRecording || backend.simMode !== "replay")
                     return;
                 let meta;
                 try {
@@ -236,6 +259,10 @@ Item {
                 } catch (e) {
                     return;
                 }
+                // The answer of a request that was stopped can still arrive;
+                // the recording names itself, so it is checked against that
+                if (meta && meta.name && meta.name !== backend.simRecording)
+                    return;
                 backend.simMeta = meta || ({});
                 backend.simPackages = (meta && meta.packages) || [];
             }

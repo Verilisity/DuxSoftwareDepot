@@ -1270,10 +1270,27 @@ APPINFO_CACHE_FILE = os.path.join(CACHE_DIR, "appinfo-cache.json")
 REVIEWS_URL = "https://odrs.gnome.org/1.0/reviews/api/fetch"
 
 
+FORCED_LANG_FILE = "dsd-lang"
+
+
+def forced_lang():
+    """A language the window is being shown in regardless of the locale —
+    English while the screenshots are made. The window writes it to the
+    runtime dir rather than into every helper's environment: it starts a
+    dozen kinds of helper from as many places, and a file is gone after a
+    reboot even if the window never got to remove it."""
+    path = os.path.join(os.environ.get("XDG_RUNTIME_DIR") or "/run/user/%d" % os.getuid(), FORCED_LANG_FILE)
+    try:
+        with open(path) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
 def locale_langs():
     """Preferred description languages from the active locale, most specific
     first — e.g. ["nl_NL", "nl"]. English (untranslated) is the fallback."""
-    lang = (os.environ.get("LC_ALL") or os.environ.get("LC_MESSAGES") or os.environ.get("LANG") or "").split(".")[0]
+    lang = (forced_lang() or os.environ.get("LC_ALL") or os.environ.get("LC_MESSAGES") or os.environ.get("LANG") or "").split(".")[0]
     if not lang or lang.lower() in ("c", "posix") or lang.startswith("en"):
         return []
     langs = [lang]

@@ -226,7 +226,7 @@ Item {
                             }
 
                             StyledText {
-                                text: newsRow.modelData.published > 0 ? new Date(newsRow.modelData.published * 1000).toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+                                text: newsRow.modelData.published > 0 ? new Date(newsRow.modelData.published * 1000).toLocaleDateString(Tr.locale, Locale.ShortFormat) : ""
                                 font.pixelSize: Theme.fontSizeSmall - 1
                                 color: Theme.surfaceVariantText
                             }

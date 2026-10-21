@@ -425,6 +425,44 @@ FloatingWindow {
     // Whether any modal popup / dialog is open over the window content
     readonly property bool anyPopupShowing: sourcesDialog.showing || newsDialog.showing || logDialog.showing || updatesDialog.showing || settingsOpen || aboutOpen || palette.showing || (windowOverlayLayer.children.length > 0 && Array.prototype.some.call(windowOverlayLayer.children, function(c) { return c && c.showing; }))
 
+    // ── Grabbing the whole window, for the screenshots ─────────────────────
+    // grabToImage from QML wants an item with a QML engine, and the window's
+    // own root item is made by Quickshell in C++ — it refuses ("item has no
+    // QML engine"). Grabbing one child takes only that child: no dialogs over
+    // it, no window colour under it. So for the length of one grab, every
+    // child is hung under this stage, in the same order, over the window's
+    // colour, and put back the moment the image exists.
+    Item {
+        id: shotStage
+        anchors.fill: parent
+        visible: false
+
+        Rectangle {
+            anchors.fill: parent
+            color: win.color
+        }
+    }
+
+    function grabWindow(callback) {
+        const root = shotStage.parent;
+        const kids = Array.prototype.slice.call(root.children).filter(c => c !== shotStage);
+        shotStage.visible = true;
+        for (const kid of kids)
+            kid.parent = shotStage;
+        const restore = () => {
+            for (const kid of kids)
+                kid.parent = root;
+            shotStage.visible = false;
+        };
+        const ok = shotStage.grabToImage(result => {
+            restore();
+            callback(result);
+        });
+        if (!ok)
+            restore();
+        return ok;
+    }
+
     // Full-window layer that hosts the view-local detail popups, so their
     // dim overlay covers the entire window instead of just the tab area.
     Item {
@@ -2478,6 +2516,39 @@ FloatingWindow {
         }
         visible = false;
         Qt.callLater(() => win.visible = true);
+    }
+
+    // Back to the bare window: every popup, panel and dialog closed. The
+    // screenshots set up one scene after another, and each has to start
+    // from the same place for the previous one not to show through.
+    function closeAllPopups() {
+        settingsOpen = false;
+        aboutOpen = false;
+        palette.close();
+        sourcesDialog.close();
+        newsDialog.close();
+        logDialog.close();
+        updatesDialog.close();
+        const install = tabView(2);
+        if (install && install.closeDialogs)
+            install.closeDialogs();
+    }
+
+    readonly property bool updateDetailsLoading: updatesDialog.loading
+
+    function openSourcesDialog() {
+        sourcesDialog.open();
+    }
+
+    function openPalette() {
+        palette.open();
+    }
+
+    // Rebuild the tabs that keep what they loaded, so a language switch
+    // reaches them too; the one showing comes back by itself through openTab
+    function reloadTabs() {
+        for (const loader of [installedLoader, installLoader, firmwareLoader, logLoader])
+            loader.active = false;
     }
 
     // The loaded view behind a tab id, for the handful of places that drive a
