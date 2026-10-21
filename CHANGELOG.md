@@ -10,7 +10,10 @@ in-app when the plugin offers its own update.
   Nothing to do on your side: settings, holds, the action log and your
   AppImages carry over, and the bar widget stays where it is. An app
   launcher entry is renamed along with its icon, and if the depot opens
-  .appimage files, it still does.
+  .appimage files, it still does. One thing the plugin cannot change for
+  you: the window's title is now "Dux Software Depot", so a window rule of
+  your own that matches "Dank Software Depot" — to keep it tiled on niri,
+  say, where DMS opens its windows floating — needs the new title.
 
 - **Ready for Dux Shell 2.0.** The shell's logo next to its own packages and
   on the Updates tab disappeared under 2.0, which keeps the running shell
