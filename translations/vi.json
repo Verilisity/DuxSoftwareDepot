@@ -558,5 +558,6 @@
     "Choose another side to move it.": "Chọn phía khác để di chuyển.",
     "Left": "Trái",
     "Center": "Giữa",
-    "Right": "Phải"
+    "Right": "Phải",
+    "An unofficial community plugin by %1, not made or supported by Dux Labs.": "Một plugin cộng đồng không chính thức của %1, không do Dux Labs tạo ra hay hỗ trợ."
 }

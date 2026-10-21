@@ -558,5 +558,6 @@
     "Choose another side to move it.": "移動するには別の位置を選んでください。",
     "Left": "左",
     "Center": "中央",
-    "Right": "右"
+    "Right": "右",
+    "An unofficial community plugin by %1, not made or supported by Dux Labs.": "%1 による非公式のコミュニティプラグインです。Dux Labs が作成・サポートしているものではありません。"
 }

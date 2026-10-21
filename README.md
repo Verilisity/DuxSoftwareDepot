@@ -22,10 +22,16 @@ honest per-package progress, an app store, [full AppImage
 management](#appimages-end-to-end), firmware support and an action log — and no
 terminal output anywhere.
 
+> [!NOTE]
+> **Unofficial.** Dux Software Depot is a community plugin, made and maintained
+> by an independent developer. It is not a Dux Labs product, and Dux Labs does
+> not support it: problems with it belong in [this repository's
+> issues](https://github.com/vinceecniv/DuxSoftwareDepot/issues), not with them.
+> The name is used with their permission.
+
 Until October 2026 this plugin was called **Dank Software Depot**; it follows
-the shell's rename, with Dux Labs' blessing. It is a community plugin, not a
-Dux Labs project. Existing installs keep working and keep their settings: the
-plugin id is still `dankSoftwareDepot`.
+the shell's rename. Existing installs keep working and keep their settings:
+the plugin id is still `dankSoftwareDepot`.
 
 ![The Updates tab: pending system packages as cards, each with its old and new
 version, above Update All](screenshot.png)

@@ -558,5 +558,6 @@
     "Choose another side to move it.": "选择另一侧以移动它。",
     "Left": "左",
     "Center": "中",
-    "Right": "右"
+    "Right": "右",
+    "An unofficial community plugin by %1, not made or supported by Dux Labs.": "由 %1 开发的非官方社区插件，并非 Dux Labs 出品，也不受其支持。"
 }

@@ -1883,6 +1883,17 @@ FloatingWindow {
                                         wrapMode: Text.WordWrap
                                     }
 
+                                    // The name follows the shell's, with Dux Labs' permission;
+                                    // it does not make this theirs, and nobody should go to them
+                                    // with a problem in it
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        text: Tr.t("An unofficial community plugin by %1, not made or supported by Dux Labs.").arg(win.pluginManifest.author || "Vincent Blok")
+                                        font.pixelSize: Theme.fontSizeSmall - 1
+                                        color: Theme.surfaceVariantText
+                                        wrapMode: Text.WordWrap
+                                    }
+
                                     // Update notice inside settings with Fully Expanding Changelog Container
                                     Rectangle {
                                         Layout.fillWidth: true

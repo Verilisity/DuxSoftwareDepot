@@ -558,5 +558,6 @@
     "Choose another side to move it.": "Виберіть інший бік, щоб перемістити його.",
     "Left": "Ліворуч",
     "Center": "По центру",
-    "Right": "Праворуч"
+    "Right": "Праворуч",
+    "An unofficial community plugin by %1, not made or supported by Dux Labs.": "Неофіційний плагін спільноти від %1; не створений і не підтримується Dux Labs."
 }

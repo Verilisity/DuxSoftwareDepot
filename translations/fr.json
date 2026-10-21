@@ -558,5 +558,6 @@
     "Choose another side to move it.": "Choisissez un autre côté pour le déplacer.",
     "Left": "Gauche",
     "Center": "Centre",
-    "Right": "Droite"
+    "Right": "Droite",
+    "An unofficial community plugin by %1, not made or supported by Dux Labs.": "Un plugin communautaire non officiel de %1, ni conçu ni pris en charge par Dux Labs."
 }

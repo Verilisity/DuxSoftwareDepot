@@ -558,5 +558,6 @@
     "Choose another side to move it.": "옮기려면 다른 쪽을 선택하세요.",
     "Left": "왼쪽",
     "Center": "가운데",
-    "Right": "오른쪽"
+    "Right": "오른쪽",
+    "An unofficial community plugin by %1, not made or supported by Dux Labs.": "%1이(가) 만든 비공식 커뮤니티 플러그인으로, Dux Labs가 만들거나 지원하지 않습니다."
 }
