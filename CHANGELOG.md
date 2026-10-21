@@ -3,7 +3,7 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
-## Unreleased
+## 1.7.0 — 2026-10-21
 
 - **Dank Software Depot is now Dux Software Depot.** DankMaterialShell
   became Dux Shell with 2.0, and the plugin follows, with Dux Labs' blessing.
@@ -14,6 +14,11 @@ in-app when the plugin offers its own update.
   you: the window's title is now "Dux Software Depot", so a window rule of
   your own that matches "Dank Software Depot" — to keep it tiled on niri,
   say, where DMS opens its windows floating — needs the new title.
+
+- **Unofficial, and it says so.** The depot is a community plugin by an
+  independent developer, not a Dux Labs product, and Dux Labs does not
+  support it. The About page and the README now say that in so many words,
+  and where problems with it should go instead.
 
 - **Ready for Dux Shell 2.0.** The shell's logo next to its own packages and
   on the Updates tab disappeared under 2.0, which keeps the running shell
