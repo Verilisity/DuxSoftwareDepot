@@ -3,6 +3,12 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
+## Unreleased
+
+- **Notifications without libnotify.** Update notifications now go through
+  `dms notify`, so they arrive on systems without `notify-send`. Shells
+  that predate `dms notify` keep using `notify-send`.
+
 ## 1.7.0 — 2026-10-21
 
 - **Dank Software Depot is now Dux Software Depot.** DankMaterialShell
