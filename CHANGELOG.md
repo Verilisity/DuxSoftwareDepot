@@ -3,6 +3,27 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
+## 1.7.1 — 2026-10-26
+
+- **Arch: the update preview and the removal warning work.** Working out
+  what an update or an uninstall would do needs no root, but on Arch it
+  failed every time with "unable to lock database", so the preview of an
+  update and the "this would also remove …" warning never appeared. They
+  do now. Thanks to @Verilisity for the report and the analysis.
+
+- **Arch: a failing mirror no longer crashes an update.** When a mirror
+  failed while the databases were being refreshed, the update could crash
+  and leave pacman's lock file behind, after which every pacman command
+  refused to run until it was removed by hand. pacman now does that
+  refresh itself, and a failing mirror is skipped, as `pacman -Syu` does.
+  The download progress on Arch also shows real sizes again instead of
+  nonsense. Thanks again to @Verilisity.
+
+- **What was just updated stays off the list.** The list shown after a
+  run could still offer updates that run had just installed, when the
+  check that followed answered from what it knew before. Those are left
+  out now; a newer version released since still shows up.
+
 ## 1.7.0 — 2026-10-21
 
 - **Dank Software Depot is now Dux Software Depot.** DankMaterialShell
