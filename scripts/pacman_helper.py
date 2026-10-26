@@ -43,20 +43,56 @@ except ImportError as exc:
     sys.exit(1)
 
 
-def init_handle():
+DBPATH = "/var/lib/pacman"
+
+
+def init_handle(dbpath=None):
     """Configured handle: pycman parses pacman.conf when available (it
     ships with pyalpm); otherwise register the sync dbs that exist on
-    disk — enough for resolving and for reads."""
+    disk — enough for resolving and for reads. `dbpath` replaces the
+    configured database directory, which is how `plan` gets a lock of its
+    own (see plan_dbpath)."""
     try:
         import pycman.config
-        return pycman.config.init_with_config("/etc/pacman.conf")
+        config = pycman.config.PacmanConfig(conf="/etc/pacman.conf")
+        if dbpath:
+            config.options["DBPath"] = dbpath
+        return config.initialize_alpm()
     except Exception:
         import glob
         import os
-        handle = pyalpm.Handle("/", "/var/lib/pacman")
-        for path in glob.glob("/var/lib/pacman/sync/*.db"):
+        handle = pyalpm.Handle("/", dbpath or DBPATH)
+        for path in glob.glob(DBPATH + "/sync/*.db"):
             handle.register_syncdb(os.path.basename(path)[:-3], 0)
         return handle
+
+
+def configured_dbpath():
+    try:
+        import pycman.config
+        return pycman.config.PacmanConfig(conf="/etc/pacman.conf").options["DBPath"].rstrip("/") or DBPATH
+    except Exception:
+        return DBPATH
+
+
+def plan_dbpath():
+    """A database directory `plan` can lock without root (#38).
+
+    libalpm takes db.lck beside the databases in init_transaction, a plan
+    included, and only root may create a file in /var/lib/pacman — so every
+    unprivileged plan died with "unable to lock database" before it resolved
+    anything, and the update preview and the removal impact never appeared.
+    `checkupdates` meets the same lock by pointing libalpm at a private
+    directory; so does this, with `local` and `sync` linked to the real
+    ones. The lock lands in the private directory, and a plan never commits,
+    so nothing is written through the links."""
+    import os
+    import tempfile
+    real = configured_dbpath()
+    tmp = tempfile.mkdtemp(prefix="dsd-plan-")
+    for part in ("local", "sync"):
+        os.symlink(os.path.join(real, part), os.path.join(tmp, part))
+    return tmp
 
 
 def _pkg_of_file(filename, plan_names):
@@ -67,12 +103,15 @@ def _pkg_of_file(filename, plan_names):
     return ""
 
 
+# alpm_download_event_type_t
+DOWNLOAD_INIT, DOWNLOAD_PROGRESS, DOWNLOAD_RETRY, DOWNLOAD_COMPLETED = range(4)
+
+
 class Callbacks:
     def __init__(self, handle):
         self.plan_names = set()
         self.totals = {}
         self.transferred = {}
-        self.pct = {}
         self.phase_started = set()
         self.dl_done = set()
         self.inst_done = set()
@@ -83,26 +122,34 @@ class Callbacks:
         handle.dlcb = self.dl
         handle.progresscb = self.progress
 
-    def dl(self, filename, transferred, total):
+    def dl(self, filename, event, _data):
+        """libalpm's download callback, as pyalpm actually delivers it.
+
+        pyalpm (0.12, and master as of 2026-10) still wraps the callback
+        libalpm had before 6.0 — `(filename, xfered, total)` — while libalpm
+        now calls it with `(filename, event, data*)`. So the second argument
+        is the event and the third is a pointer cut down to an int; reading
+        them as bytes put a negative `bytesTotal` on the wire. Only the event
+        survives the trip, so the sizes come from the plan: a download is
+        reported when it starts and when it ends, with nothing in between.
+        A retry on the next mirror starts nothing new."""
+        if filename.endswith(".sig"):
+            return
         name = _pkg_of_file(filename, self.plan_names)
         if not name:
             return
-        if name not in self.phase_started:
+        total = int(self.totals.get(name, 0))
+        if event == DOWNLOAD_INIT and name not in self.phase_started:
             self.phase_started.add(name)
             emit({"event": "op-start", "name": name, "phase": "download",
-                  "bytesTotal": int(total or 0)})
-        if total:
-            self.totals[name] = total
-        self.transferred[name] = transferred
-        agg = int(sum(self.transferred.values()))
-        pct = int(transferred * 100 / total) if total else 0
-        if self.pct.get(name) != pct:
-            self.pct[name] = pct
-            emit({"event": "progress", "name": name, "phase": "download",
-                  "percent": pct, "bytesTransferred": int(transferred),
-                  "bytesTotal": int(total or 0), "totalTransferred": agg})
-        if total and transferred >= total and name not in self.dl_done:
+                  "bytesTotal": total})
+        elif event == DOWNLOAD_COMPLETED and name not in self.dl_done:
             self.dl_done.add(name)
+            self.transferred[name] = total
+            agg = int(sum(self.transferred.values()))
+            emit({"event": "progress", "name": name, "phase": "download",
+                  "percent": 100, "bytesTransferred": total,
+                  "bytesTotal": total, "totalTransferred": agg})
             emit({"event": "op-done", "name": name, "phase": "download",
                   "totalTransferred": agg})
 
@@ -126,7 +173,7 @@ class Callbacks:
             emit({"event": "op-done", "name": target, "phase": phase})
 
 
-def refresh_syncdbs(handle):
+def refresh_syncdbs():
     """`pacman -Sy` — which nothing else in this path does.
 
     A transaction resolves names against the sync databases as they are on
@@ -138,15 +185,33 @@ def refresh_syncdbs(handle):
     each, and the check afterwards found that nothing had reached its target
     version (#13).
 
+    pacman itself does the refresh, not pyalpm's db.update: when a mirror
+    failed mid-download, libalpm's failure path under pyalpm's download
+    callbacks crashed the helper with SIGSEGV — no `finally`, so db.lck was
+    left behind and every pacman command failed until it was removed by
+    hand (#37). pacman walks the mirrorlist past the same failure. It runs
+    before any handle is opened, so the handle reads what it wrote.
+
     A failure here is not fatal. One unreachable mirror is a reason to
     attempt the transaction with what is on disk, not a reason to refuse it.
     """
-    for db in handle.get_syncdbs():
-        try:
-            db.update(False)
-        except pyalpm.error as exc:
-            emit({"event": "error",
-                  "message": "could not refresh %s: %s" % (db.name, exc)})
+    import shutil
+    import subprocess
+    pacman = shutil.which("pacman") or "/usr/bin/pacman"
+    try:
+        proc = subprocess.run([pacman, "--sync", "--refresh", "--noconfirm",
+                               "--noprogressbar"],
+                              stdin=subprocess.DEVNULL, capture_output=True,
+                              text=True, timeout=1800)
+    except (OSError, subprocess.SubprocessError) as exc:
+        emit({"event": "error", "message": "could not refresh the databases: %s" % exc})
+        return
+    if proc.returncode != 0:
+        lines = [line.strip() for line in (proc.stderr + proc.stdout).splitlines()
+                 if line.strip().startswith(("error:", "ERROR:"))]
+        emit({"event": "error",
+              "message": "could not refresh the databases: %s"
+                         % ("; ".join(lines) or "pacman exited with %d" % proc.returncode)})
 
 
 def find_sync_pkg(handle, name):
@@ -158,12 +223,22 @@ def find_sync_pkg(handle, name):
 
 
 def run(action, specs, dry_run=False):
-    handle = init_handle()
     # Reading the repositories is the whole point of install and upgrade, so
     # they get a fresh copy first. `plan` is deliberately left out: it runs
     # unprivileged, and writing the sync databases needs root.
     if action != "remove" and not dry_run:
-        refresh_syncdbs(handle)
+        refresh_syncdbs()
+    if not dry_run:
+        return transact(init_handle(), action, specs, dry_run)
+    import shutil
+    dbpath = plan_dbpath()
+    try:
+        return transact(init_handle(dbpath), action, specs, dry_run)
+    finally:
+        shutil.rmtree(dbpath, ignore_errors=True)
+
+
+def transact(handle, action, specs, dry_run):
     callbacks = Callbacks(handle)
     localdb = handle.get_localdb()
 
@@ -204,6 +279,7 @@ def run(action, specs, dry_run=False):
             down = int(pkg.download_size or 0)
             total_download += down
             callbacks.plan_names.add(pkg.name)
+            callbacks.totals[pkg.name] = down
             ops.append({"name": pkg.name, "evr": pkg.version, "action": act,
                         "downloadBytes": down, "installBytes": int(pkg.isize or 0)})
         disk_delta = sum(o["installBytes"] for o in ops)

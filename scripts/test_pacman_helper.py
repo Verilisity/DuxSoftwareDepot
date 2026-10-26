@@ -51,14 +51,13 @@ class SyncDB:
     name = "extra"
 
     def __init__(self):
-        self.refreshed = False
+        # The refresh is pacman's, run before the handle opens: what it
+        # wrote is what this database reads
+        self.refreshed = os.path.exists(TRACE + ".refreshed")
 
     def update(self, force):
-        if SCENARIO.get("refreshFails"):
-            raise error("mirror unreachable")
-        _trace("refresh")
-        self.refreshed = True
-        return True
+        _trace("pyalpm refresh")
+        raise error("db.update is the path that crashed in #37")
 
     def get_pkg(self, name):
         entry = SCENARIO["packages"].get(name)
@@ -78,7 +77,8 @@ class LocalDB:
 
 
 class Transaction:
-    def __init__(self):
+    def __init__(self, handle):
+        self.handle = handle
         self.to_add = []
         self.to_remove = []
 
@@ -93,6 +93,15 @@ class Transaction:
         pass
 
     def commit(self):
+        # What pyalpm really passes its download callback: the event where
+        # the bytes transferred used to be, and a pointer cut to an int
+        # where the total was
+        dlcb = getattr(self.handle, "dlcb", None)
+        if dlcb:
+            for pkg in self.to_add:
+                filename = "%s-%s-x86_64.pkg.tar.zst" % (pkg.name, pkg.version)
+                for event in (0, 1, 2, 1, 3):
+                    dlcb(filename, event, -523683652)
         _trace("commit")
 
     def release(self):
@@ -105,6 +114,10 @@ class Handle:
         # cleanly and gives way here, at the first call into the library
         if SCENARIO.get("handleFails"):
             raise error("could not initialise the library")
+        _trace("dbpath %s" % dbpath)
+        # init_transaction takes db.lck here, which only root may create
+        if os.path.realpath(dbpath) == "/var/lib/pacman":
+            self._locked_out = True
         self._sync = [SyncDB()]
 
     def register_syncdb(self, name, level):
@@ -117,22 +130,48 @@ class Handle:
         return LocalDB()
 
     def init_transaction(self, **kwargs):
-        return Transaction()
+        if getattr(self, "_locked_out", False) and not os.environ.get("PACMAN_STUB_ROOT"):
+            raise error("transaction could not be initialized, pm_errno 10 (unable to lock database)")
+        return Transaction(self)
 
     # The helper installs progress callbacks when they exist; it checks with
     # hasattr, so leaving them off is a supported shape.
+'''
+
+# Stands in for /usr/bin/pacman, which now does the refresh (#37)
+FAKE_PACMAN = '''#!/usr/bin/env python3
+import json, os, sys
+scenario = json.loads(os.environ["PACMAN_STUB"])
+trace = os.environ["PACMAN_TRACE"]
+with open(trace, "a") as fh:
+    fh.write("pacman " + " ".join(sys.argv[1:]) + "\\n")
+if scenario.get("refreshFails"):
+    print("error: failed retrieving file 'extra.db' from mirror.example : mirror unreachable", file=sys.stderr)
+    sys.exit(1)
+with open(trace, "a") as fh:
+    fh.write("refresh\\n")
+open(trace + ".refreshed", "w").close()
 '''
 
 
 def run(scenario, *args):
     with tempfile.TemporaryDirectory() as tmp:
         (Path(tmp) / "pyalpm.py").write_text(STUB)
+        bindir = Path(tmp) / "bin"
+        bindir.mkdir()
+        (bindir / "pacman").write_text(FAKE_PACMAN)
+        (bindir / "pacman").chmod(0o755)
         trace = Path(tmp) / "trace"
         trace.write_text("")
         env = dict(os.environ)
+        env["PATH"] = "%s:%s" % (bindir, env.get("PATH", ""))
         env["PYTHONPATH"] = tmp
         env["PACMAN_STUB"] = json.dumps(scenario)
         env["PACMAN_TRACE"] = str(trace)
+        # Transactions run as root under pkexec; only `plan` and `selftest`
+        # are the user's own
+        if args[0] not in ("plan", "selftest"):
+            env["PACMAN_STUB_ROOT"] = "1"
         proc = subprocess.run([sys.executable, str(HELPER), *args],
                               capture_output=True, text=True, env=env, timeout=60)
         events = []
@@ -141,7 +180,9 @@ def run(scenario, *args):
                 events.append(json.loads(line))
             except ValueError:
                 pass
-        return events, trace.read_text().splitlines(), proc
+        lines = [line for line in trace.read_text().splitlines()
+                 if not line.startswith(("dbpath ", "pacman "))]
+        return events, lines, proc, trace.read_text().splitlines()
 
 
 def event(events, kind):
@@ -164,7 +205,7 @@ def main():
     behind = {"packages": {"dolphin": {"installed": "26.08.0-2",
                                        "before": "26.08.0-2",
                                        "after": "26.08.1-1"}}}
-    events, trace, proc = run(behind, "upgrade", "dolphin")
+    events, trace, proc, _ = run(behind, "upgrade", "dolphin")
     ok &= check("refresh happens before the package is resolved",
                 trace[:2] == ["refresh", "resolve dolphin -> 26.08.1-1"], str(trace))
     plan = event(events, "plan")
@@ -173,13 +214,24 @@ def main():
     ok &= check("and it is an upgrade, not a reinstall",
                 plan is not None and plan["ops"][0]["action"] == "Upgrade")
     ok &= check("the transaction is committed", "commit" in trace)
+    downloads = [e for e in events if e.get("phase") == "download"]
+    ok &= check("the download is reported with the plan's size, not the callback's pointer",
+                bool(downloads) and all(e.get("bytesTotal") == 1000 for e in downloads if "bytesTotal" in e),
+                json.dumps(downloads))
+    ok &= check("and starts once, ends once, through a retry",
+                [e["event"] for e in downloads] == ["op-start", "progress", "op-done"]
+                and downloads[-1].get("totalTransferred") == 1000, json.dumps(downloads))
+    events, trace, proc, raw = run(behind, "upgrade", "dolphin")
+    ok &= check("pacman does the refresh, not pyalpm's db.update (#37)",
+                "pacman --sync --refresh --noconfirm --noprogressbar" in raw
+                and "pyalpm refresh" not in raw, str(raw))
 
     # Already at the version the repositories offer: adding it anyway is the
     # "is up to date -- reinstalling" line from the report.
     current = {"packages": {"libdeflate": {"installed": "1.25-1",
                                            "before": "1.25-1",
                                            "after": "1.25-1"}}}
-    events, trace, proc = run(current, "upgrade", "libdeflate")
+    events, trace, proc, _ = run(current, "upgrade", "libdeflate")
     ok &= check("a package already at the repository version is not added",
                 not any(line.startswith("add ") for line in trace), str(trace))
     done = event(events, "done")
@@ -193,7 +245,7 @@ def main():
               "packages": {"dolphin": {"installed": "26.08.0-2",
                                        "before": "26.08.1-1",
                                        "after": "26.08.2-1"}}}
-    events, trace, proc = run(partly, "upgrade", "dolphin")
+    events, trace, proc, _ = run(partly, "upgrade", "dolphin")
     ok &= check("a failed refresh still installs what the stale database has",
                 "commit" in trace and "add dolphin-26.08.1-1" in trace, str(trace))
     ok &= check("and says why it could not refresh",
@@ -205,23 +257,38 @@ def main():
     # will otherwise fail every row with nothing to show for it.
     stuck = dict(behind)
     stuck["refreshFails"] = True
-    events, trace, proc = run(stuck, "upgrade", "dolphin")
+    events, trace, proc, _ = run(stuck, "upgrade", "dolphin")
     ok &= check("a stale database with nothing newer adds nothing",
                 not any(line.startswith("add ") for line in trace), str(trace))
     ok &= check("and the refresh failure is the reason on the wire",
                 any(e.get("event") == "error" and "mirror unreachable" in e.get("message", "") for e in events))
 
     # `plan` is unprivileged: writing the sync databases needs root.
-    events, trace, proc = run(behind, "plan", "upgrade", "dolphin")
-    ok &= check("plan does not try to refresh", "refresh" not in trace, str(trace))
+    events, trace, proc, raw = run(behind, "plan", "upgrade", "dolphin")
+    ok &= check("plan does not try to refresh",
+                not any("refresh" in line for line in raw), str(raw))
     ok &= check("and does not commit", "commit" not in trace)
+
+    # The lock libalpm takes in init_transaction lives beside the databases,
+    # and only root may create it in /var/lib/pacman: a plan opened there
+    # failed every time (#38). It gets a directory of its own, removed after.
+    done = event(events, "done")
+    ok &= check("plan resolves without the lock on the real databases",
+                done is not None and done.get("ok") is True
+                and not any("unable to lock" in e.get("message", "") for e in events),
+                json.dumps(events))
+    dbpaths = [line[len("dbpath "):] for line in raw if line.startswith("dbpath ")]
+    ok &= check("in a private database directory",
+                bool(dbpaths) and os.path.realpath(dbpaths[-1]) != "/var/lib/pacman", str(raw))
+    ok &= check("which is gone afterwards",
+                bool(dbpaths) and not os.path.exists(dbpaths[-1]), dbpaths[-1] if dbpaths else "")
 
     # Installing is the other side of the same staleness: a package added to
     # the repositories today is not in yesterday's database at all.
     fresh = {"packages": {"newthing": {"installed": None,
                                        "before": None,
                                        "after": "1.0-1"}}}
-    events, trace, proc = run(fresh, "install", "newthing")
+    events, trace, proc, _ = run(fresh, "install", "newthing")
     ok &= check("install resolves against the refreshed database",
                 any(line == "add newthing-1.0-1" for line in trace), str(trace))
 
@@ -232,7 +299,7 @@ def main():
     # repo "aur" updates to the DMS daemon's AUR backend (paru/yay) and
     # never hands them here. The test pins the refusal that routing exists
     # to avoid, so a future caller cannot reintroduce it by accident.
-    events, trace, proc = run(behind, "upgrade", "some-aur-package")
+    events, trace, proc, _ = run(behind, "upgrade", "some-aur-package")
     ok &= check("a package outside every sync database fails with its reason",
                 any(e.get("event") == "error" and "package not found: some-aur-package" in e.get("message", "") for e in events))
     done = event(events, "done")
@@ -245,13 +312,13 @@ def main():
     # cannot open a handle used to pass the selftest, so the plugin said
     # nothing at startup and every later run failed with no reason to show
     # (#18); the selftest now takes that step itself.
-    events, trace, proc = run(behind, "selftest")
+    events, trace, proc, _ = run(behind, "selftest")
     done = event(events, "done")
     ok &= check("selftest passes when the library can be opened",
                 proc.returncode == 0 and done is not None and done.get("ok") is True,
                 json.dumps(done))
 
-    events, trace, proc = run({"packages": {}, "handleFails": True}, "selftest")
+    events, trace, proc, _ = run({"packages": {}, "handleFails": True}, "selftest")
     ok &= check("selftest fails when pyalpm imports but libalpm will not open",
                 proc.returncode != 0 and any(e.get("event") == "error" and "libalpm could not be used" in e.get("message", "") for e in events),
                 proc.stdout + proc.stderr)
