@@ -57,9 +57,98 @@ PluginComponent {
             if (seen.has(key))
                 continue;
             seen.add(key);
+            if (!Backend.replaying && _justUpdated(key, pkg.toVersion))
+                continue;
             out.push(pkg);
         }
         return out;
+    }
+
+    // ── What the last run just installed ────────────────────────────────────
+    // A list shown after a run must not offer again what that run has just
+    // installed. The refresh before a transaction and the check after it are
+    // meant to see to that, but the check is the daemon's, and the daemon can
+    // answer from what it knew before the run — then a row that the run
+    // reported as done, and that verification confirmed, came straight back
+    // as pending. So every list here also leaves out what the last run did,
+    // as a safety net under the check rather than instead of it.
+    //
+    // key -> {to: target version, at: ms}. With a target version only that
+    // version is hidden: a newer one released since is a real update. A row
+    // that never named one (a Flatpak's is often "?") is hidden for a short
+    // while instead. An entry goes once a check after the run no longer
+    // reports it, or when it expires; it is persisted, because the DMS pass
+    // reloads the shell and with it this plugin.
+    readonly property var _succeeded: Backend.replaying ? ({}) : (pluginData.justUpdated || {})
+    readonly property int _succeededKnownMs: 24 * 3600 * 1000
+    readonly property int _succeededUnknownMs: 15 * 60 * 1000
+
+    function _justUpdated(key, toVersion) {
+        const entry = _succeeded[key];
+        if (!entry)
+            return false;
+        const noEpoch = v => String(v || "").replace(/^\d+:/, "");
+        const want = noEpoch(entry.to);
+        const offered = noEpoch(toVersion);
+        if (want === "" || offered === "" || offered === "?")
+            return Date.now() - (entry.at || 0) < _succeededUnknownMs;
+        return want === offered;
+    }
+
+    function _rememberSucceeded() {
+        if (Backend.replaying)
+            return;
+        const map = Object.assign({}, _succeeded);
+        const now = Date.now();
+        let added = false;
+        for (const item of engine.runItems || []) {
+            const state = engine.itemStates[item.key];
+            if (!state || state.status !== "done")
+                continue;
+            map[item.key] = {
+                to: (item.pkg && item.pkg.toVersion) || "",
+                at: now
+            };
+            added = true;
+        }
+        if (added)
+            _saveSucceeded(map);
+    }
+
+    // `present` holds the keys the daemon's latest list reports; null when
+    // only expiry applies. A key is only dropped for being absent when that
+    // list is from a check that started after the run — the stale answer is
+    // exactly the one this exists for.
+    function _pruneSucceeded(present) {
+        const keys = Object.keys(_succeeded);
+        if (keys.length === 0)
+            return;
+        const now = Date.now();
+        const checkedMs = (SystemUpdateService.lastCheckUnix || 0) * 1000;
+        const map = {};
+        for (const key of keys) {
+            const entry = _succeeded[key];
+            const ttl = entry.to ? _succeededKnownMs : _succeededUnknownMs;
+            if (now - (entry.at || 0) >= ttl)
+                continue;
+            const daemonKind = key.indexOf("system/") === 0 || key.indexOf("flatpak/") === 0;
+            if (present && daemonKind && checkedMs > (entry.at || 0) && !present.has(key))
+                continue;
+            map[key] = entry;
+        }
+        if (Object.keys(map).length !== keys.length)
+            _saveSucceeded(map);
+    }
+
+    function _saveSucceeded(map) {
+        PluginService.savePluginData("dankSoftwareDepot", "justUpdated", map);
+    }
+
+    Timer {
+        interval: 60000
+        repeat: true
+        running: Object.keys(root._succeeded).length > 0
+        onTriggered: root._pruneSucceeded(null)
     }
 
     // Held packages (dnf versionlock/excludes) never count as real updates
@@ -172,7 +261,7 @@ PluginComponent {
 
     // ── Pending AppImage updates (GitHub releases via scripts/appimage.py) ──
     property var _appimageFound: []
-    readonly property var appimageUpdates: _appimageFound.filter(u => !heldNames.has(u.id))
+    readonly property var appimageUpdates: _appimageFound.filter(u => !heldNames.has(u.id) && !_justUpdated("appimage/" + u.id, u.latest))
 
     Process {
         id: appimageCheckProcess
@@ -200,7 +289,7 @@ PluginComponent {
     // remembered and the rest only runs when it is yes.
     property bool brewSupported: false
     property var _brewFound: []
-    readonly property var brewUpdates: _brewFound.filter(f => !heldNames.has(f.name))
+    readonly property var brewUpdates: _brewFound.filter(f => !heldNames.has(f.name) && !_justUpdated("brew/" + f.name, f.toVersion))
     property var brewInstalled: []
 
     readonly property string brewScript: Qt.resolvedUrl("scripts/brew_helper.py").toString().replace("file://", "")
@@ -280,12 +369,15 @@ PluginComponent {
                 path: plugin.path || ""
             };
             const notes = store.pluginNotes[store.pluginNotesKey(pkg)] || null;
+            const toVersion = plugin.latestVersion || plugin.newVersion || (notes && notes.toVersion !== pkg.fromVersion ? (notes.toVersion || "") : "");
+            if (_justUpdated("plugin/" + id, toVersion))
+                continue;
             out.push({
                 name: id,
                 displayName: plugin.name || manifest.name || id,
                 repo: "dmsplugin",
                 fromVersion: pkg.fromVersion,
-                toVersion: plugin.latestVersion || plugin.newVersion || (notes && notes.toVersion !== pkg.fromVersion ? (notes.toVersion || "") : ""),
+                toVersion: toVersion,
                 diffUrl: pkg.diffUrl,
                 path: pkg.path,
                 // A plugin's manifest names a Material Symbols glyph rather
@@ -446,7 +538,7 @@ PluginComponent {
             notify((count === 1 ? Tr.t("%1 update available") : Tr.t("%1 updates available")).arg(count));
         }
         if (autoUpdateMode === "auto" && !engine.running && !SystemUpdateService.isUpgrading) {
-            const hasFlatpaks = (SystemUpdateService.availableUpdates || []).some(pkg => pkg.repo === "flatpak");
+            const hasFlatpaks = root.pendingUpdates.some(pkg => pkg.repo === "flatpak");
             if (hasFlatpaks)
                 engine.start({
                     dnf: false,
@@ -1235,8 +1327,10 @@ PluginComponent {
             // which is also what makes "still offered as an update after the
             // run" reach the log as the failure it is.
             root._logAwaitingVerification = engine.phase === "verifying";
-            if (!root._logAwaitingVerification)
+            if (!root._logAwaitingVerification) {
                 root._logRun();
+                root._rememberSucceeded();
+            }
             eolProcess.running = true;
             // A run is the one thing that changes the AppStream catalogs, so
             // this is where the index is most likely to have just gone stale
@@ -1264,6 +1358,7 @@ PluginComponent {
             if (Backend.replaying)
                 return;
             Backend.finishRecording();
+            root._rememberSucceeded();
             if (stuck > 0)
                 root._saveFailures();
             if (!root._logAwaitingVerification)
@@ -1456,6 +1551,7 @@ PluginComponent {
         target: SystemUpdateService
 
         function onAvailableUpdatesChanged() {
+            root._pruneSucceeded(new Set((SystemUpdateService.availableUpdates || []).map(pkg => store.keyFor(pkg))));
             store.refresh(SystemUpdateService.availableUpdates);
             sizesDebounce.restart();
             root._saveUpdatesSnapshot();
