@@ -40,9 +40,10 @@ def vercmp(a, b):
 
 
 class Pkg:
-    def __init__(self, name, version):
+    def __init__(self, name, version, arch="x86_64"):
         self.name = name
         self.version = version
+        self.arch = arch
         self.download_size = 1000
         self.isize = 2000
 
@@ -65,7 +66,7 @@ class SyncDB:
             return None
         version = entry["after"] if self.refreshed else entry["before"]
         _trace("resolve %s -> %s" % (name, version))
-        return Pkg(name, version)
+        return Pkg(name, version, entry.get("arch", "x86_64"))
 
 
 class LocalDB:
@@ -73,7 +74,7 @@ class LocalDB:
         entry = SCENARIO["packages"].get(name)
         if entry is None or entry.get("installed") is None:
             return None
-        return Pkg(name, entry["installed"])
+        return Pkg(name, entry["installed"], entry.get("arch", "x86_64"))
 
 
 class Transaction:
@@ -116,9 +117,11 @@ class Handle:
             raise error("could not initialise the library")
         _trace("dbpath %s" % dbpath)
         # init_transaction takes db.lck here, which only root may create
-        if os.path.realpath(dbpath) == "/var/lib/pacman":
+        if os.path.realpath(dbpath) == os.path.realpath(os.environ["DSD_PACMAN_DBPATH"]):
             self._locked_out = True
         self._sync = [SyncDB()]
+        # What pacman-conf says, set by the helper; empty means no check
+        self.arch = []
 
     def register_syncdb(self, name, level):
         pass
@@ -138,13 +141,21 @@ class Handle:
     # hasattr, so leaving them off is a supported shape.
 '''
 
-# Stands in for /usr/bin/pacman, which now does the refresh (#37)
+# Stands in for /usr/bin/pacman, which now does the refresh (#37) and
+# resolves the request before pyalpm is allowed to (the preflight)
 FAKE_PACMAN = '''#!/usr/bin/env python3
 import json, os, sys
 scenario = json.loads(os.environ["PACMAN_STUB"])
 trace = os.environ["PACMAN_TRACE"]
 with open(trace, "a") as fh:
     fh.write("pacman " + " ".join(sys.argv[1:]) + "\\n")
+if "--print" in sys.argv:
+    with open(trace, "a") as fh:
+        fh.write("preflight\\n")
+    if scenario.get("preflightFails"):
+        print("error: unresolvable package conflicts detected", file=sys.stderr)
+        sys.exit(1)
+    sys.exit(0)
 if scenario.get("refreshFails"):
     print("error: failed retrieving file 'extra.db' from mirror.example : mirror unreachable", file=sys.stderr)
     sys.exit(1)
@@ -152,6 +163,21 @@ with open(trace, "a") as fh:
     fh.write("refresh\\n")
 open(trace + ".refreshed", "w").close()
 '''
+
+# pacman-conf, when the scenario names the architectures the fake pacman
+# accepts; a scenario without them has no pacman-conf at all, which is a
+# machine where the question cannot be asked.
+FAKE_PACMAN_CONF = '''#!/usr/bin/env python3
+import os, sys
+with open(os.environ["PACMAN_TRACE"], "a") as fh:
+    fh.write("pacman-conf " + " ".join(sys.argv[1:]) + "\\n")
+for arch in os.environ["PACMAN_ARCHS"].split():
+    print(arch)
+'''
+
+# What the last run left behind, for the checks that look at the fixture
+# rather than at the events
+LAST = {}
 
 
 def run(scenario, *args):
@@ -161,9 +187,40 @@ def run(scenario, *args):
         bindir.mkdir()
         (bindir / "pacman").write_text(FAKE_PACMAN)
         (bindir / "pacman").chmod(0o755)
+        if scenario.get("architectures") is not None:
+            (bindir / "pacman-conf").write_text(FAKE_PACMAN_CONF)
+            (bindir / "pacman-conf").chmod(0o755)
+        # Stands in for /var/lib/pacman: where the lock lives, and what a
+        # plan must not open for a transaction
+        dbpath = Path(tmp) / "db"
+        dbpath.mkdir()
         trace = Path(tmp) / "trace"
         trace.write_text("")
         env = dict(os.environ)
+        env["DSD_PACMAN_DBPATH"] = str(dbpath)
+        if scenario.get("architectures") is not None:
+            env["PACMAN_ARCHS"] = " ".join(scenario["architectures"])
+        lock = dbpath / "db.lck"
+        if scenario.get("staleLock") or scenario.get("heldLock"):
+            lock.touch()
+            # Old enough that it cannot be read as a run that is starting
+            os.utime(lock, (0, 0))
+            # A /proc of two processes: a bystander, and — when the lock is
+            # held — the holder, with the lock among its open files the way
+            # libalpm keeps it. A real /proc has processes the test user
+            # may not look into, whose answer is "cannot tell"; the helper
+            # running as root has no such processes.
+            proc_dir = Path(tmp) / "proc"
+            for pid, comm, argv, holds in ((4242, "sleep", "sleep 60", False),
+                                           (4343, "pacman", "pacman -Syu", scenario.get("heldLock"))):
+                if comm == "pacman" and not holds:
+                    continue
+                (proc_dir / str(pid) / "fd").mkdir(parents=True)
+                (proc_dir / str(pid) / "comm").write_text(comm + "\n")
+                (proc_dir / str(pid) / "cmdline").write_bytes(argv.replace(" ", "\0").encode() + b"\0")
+                if holds:
+                    os.symlink(str(lock), proc_dir / str(pid) / "fd" / "3")
+            env["DSD_PROC"] = str(proc_dir)
         env["PATH"] = "%s:%s" % (bindir, env.get("PATH", ""))
         env["PYTHONPATH"] = tmp
         env["PACMAN_STUB"] = json.dumps(scenario)
@@ -182,6 +239,9 @@ def run(scenario, *args):
                 pass
         lines = [line for line in trace.read_text().splitlines()
                  if not line.startswith(("dbpath ", "pacman "))]
+        LAST.clear()
+        LAST["lockRemains"] = lock.exists()
+        LAST["dbpath"] = str(dbpath)
         return events, lines, proc, trace.read_text().splitlines()
 
 
@@ -207,7 +267,7 @@ def main():
                                        "after": "26.08.1-1"}}}
     events, trace, proc, _ = run(behind, "upgrade", "dolphin")
     ok &= check("refresh happens before the package is resolved",
-                trace[:2] == ["refresh", "resolve dolphin -> 26.08.1-1"], str(trace))
+                trace[:3] == ["refresh", "preflight", "resolve dolphin -> 26.08.1-1"], str(trace))
     plan = event(events, "plan")
     ok &= check("the plan carries the version the refresh revealed",
                 plan is not None and plan["ops"][0]["evr"] == "26.08.1-1", json.dumps(plan))
@@ -267,6 +327,7 @@ def main():
     events, trace, proc, raw = run(behind, "plan", "upgrade", "dolphin")
     ok &= check("plan does not try to refresh",
                 not any("refresh" in line for line in raw), str(raw))
+    ok &= check("nor ask pacman to resolve", "preflight" not in trace, str(trace))
     ok &= check("and does not commit", "commit" not in trace)
 
     # The lock libalpm takes in init_transaction lives beside the databases,
@@ -279,7 +340,7 @@ def main():
                 json.dumps(events))
     dbpaths = [line[len("dbpath "):] for line in raw if line.startswith("dbpath ")]
     ok &= check("in a private database directory",
-                bool(dbpaths) and os.path.realpath(dbpaths[-1]) != "/var/lib/pacman", str(raw))
+                bool(dbpaths) and os.path.realpath(dbpaths[-1]) != os.path.realpath(LAST["dbpath"]), str(raw))
     ok &= check("which is gone afterwards",
                 bool(dbpaths) and not os.path.exists(dbpaths[-1]), dbpaths[-1] if dbpaths else "")
 
@@ -324,6 +385,65 @@ def main():
                 proc.stdout + proc.stderr)
     ok &= check("and the reason libalpm gave travels with it",
                 any("could not initialise the library" in e.get("message", "") for e in events if e.get("event") == "error"))
+
+    # pacman resolves the request before pyalpm does, because pyalpm 0.12
+    # segfaults on two of libalpm's three ways of refusing a transaction
+    # (a conflict, a wrong architecture) and a helper dead inside its
+    # transaction leaves the lock behind. A refusal from pacman is a reason
+    # on the wire and no transaction at all.
+    refused = dict(behind)
+    refused["preflightFails"] = True
+    events, trace, proc, _ = run(refused, "upgrade", "dolphin")
+    ok &= check("a request pacman would refuse never reaches pyalpm",
+                not any(line.startswith("add ") for line in trace) and "commit" not in trace, str(trace))
+    ok &= check("and pacman's reason is the one reported",
+                any(e.get("event") == "error" and "unresolvable package conflicts" in e.get("message", "") for e in events),
+                json.dumps(events))
+
+    # The architecture list is pacman-conf's, not pycman's: CachyOS's
+    # pacman resolves `Architecture = auto` to the CPU's feature levels and
+    # ships x86_64_v3 packages, which a handle that accepts only x86_64
+    # refuses — through pyalpm, with a segfault, in a plan as in a run.
+    v3 = {"architectures": ["x86_64", "x86_64_v2", "x86_64_v3"],
+          "packages": {"libsoup3": {"installed": "3.8.0-1", "before": "3.8.1-1.1",
+                                    "after": "3.8.1-1.1", "arch": "x86_64_v3"}}}
+    events, trace, proc, raw = run(v3, "upgrade", "libsoup3")
+    ok &= check("the accepted architectures are asked of pacman-conf",
+                "pacman-conf Architecture" in raw, str(raw))
+    ok &= check("and a package of an accepted level installs",
+                "add libsoup3-3.8.1-1.1" in trace and "commit" in trace, str(trace))
+    events, trace, proc, raw = run(v3, "plan", "upgrade", "libsoup3")
+    ok &= check("a plan asks the same question",
+                "pacman-conf Architecture" in raw and event(events, "plan") is not None, str(raw))
+    narrow = dict(v3)
+    narrow["architectures"] = ["x86_64"]
+    events, trace, proc, _ = run(narrow, "upgrade", "libsoup3")
+    ok &= check("a package of a level this pacman does not accept is refused before prepare()",
+                not any(line.startswith("add ") for line in trace) and "commit" not in trace, str(trace))
+    ok &= check("with the architecture named",
+                any(e.get("event") == "error" and "architecture is not valid: libsoup3-3.8.1-1.1-x86_64_v3" in e.get("message", "") for e in events),
+                json.dumps(events))
+
+    # A lock nothing holds is what a helper that died in its transaction
+    # leaves behind, and what every run after it used to fail on. The
+    # helper clears it, says so, and goes on; a lock something holds stays,
+    # and the run names the holder instead of starting.
+    stale = dict(behind)
+    stale["staleLock"] = True
+    events, trace, proc, _ = run(stale, "upgrade", "dolphin")
+    ok &= check("a stale lock is removed and the run goes on",
+                not LAST["lockRemains"] and "commit" in trace, str(trace) + " lockRemains=%s" % LAST["lockRemains"])
+    ok &= check("and the removal is announced",
+                any(e.get("event") == "warning" and "stale pacman lock" in e.get("message", "") for e in events),
+                json.dumps(events))
+    held = dict(behind)
+    held["heldLock"] = True
+    events, trace, proc, _ = run(held, "upgrade", "dolphin")
+    ok &= check("a lock something holds is left alone",
+                LAST["lockRemains"] and "commit" not in trace and "refresh" not in trace, str(trace))
+    ok &= check("and the run says who has it",
+                any(e.get("event") == "error" and "pacman is busy" in e.get("message", "") for e in events),
+                json.dumps(events))
 
     print("\n" + ("all checks passed" if ok else "FAILURES"))
     return 0 if ok else 1

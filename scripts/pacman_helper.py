@@ -15,8 +15,12 @@ Linux Archive's job, out of scope here). Official repositories only —
 AUR packages are never touched.
 """
 import json
+import os
 import re
+import shutil
+import subprocess
 import sys
+import time
 
 
 def emit(obj):
@@ -43,7 +47,49 @@ except ImportError as exc:
     sys.exit(1)
 
 
-DBPATH = "/var/lib/pacman"
+# The environment variable is for the tests, which stand up a database
+# directory of their own; it does not survive into a privileged run, since
+# pkexec builds its own environment.
+DBPATH = os.environ.get("DSD_PACMAN_DBPATH", "/var/lib/pacman")
+# Where a lock's holder is looked for; the tests stand up a small one
+PROC = os.environ.get("DSD_PROC", "/proc")
+
+
+def architectures():
+    """The architectures this pacman accepts, as pacman itself resolves them.
+
+    pacman.conf says `Architecture = auto` on nearly every machine, and what
+    `auto` means is pacman's decision, not the kernel's. Upstream pacman
+    reads it as the machine type (x86_64). CachyOS's pacman reads it as the
+    machine type plus the CPU feature levels the machine can run — x86_64,
+    x86_64_v2, x86_64_v3 — and ships most of its repositories as x86_64_v3
+    packages. pycman resolves `auto` from os.uname() alone, so a handle it
+    configures accepts x86_64 and nothing else, and libalpm's prepare()
+    refuses every v3 package with "package architecture is not valid".
+
+    That refusal should arrive as an exception. Through pyalpm 0.12 it is a
+    segfault: its prepare() wrapper reads whatever error list libalpm hands
+    back as missing-dependency records, and the architecture error is a
+    list of strings. A plan dies the same way, and a privileged helper
+    killed between lock and release leaves db.lck behind — the ending of
+    #37, from a different start.
+
+    `pacman-conf Architecture` prints the list the way the installed pacman
+    resolves it, distribution patches included. None when it cannot be
+    asked.
+    """
+    pacman_conf = shutil.which("pacman-conf")
+    if not pacman_conf:
+        return None
+    try:
+        proc = subprocess.run([pacman_conf, "Architecture"], stdin=subprocess.DEVNULL,
+                              capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    archs = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    return archs or None
 
 
 def init_handle(dbpath=None):
@@ -51,20 +97,30 @@ def init_handle(dbpath=None):
     ships with pyalpm); otherwise register the sync dbs that exist on
     disk — enough for resolving and for reads. `dbpath` replaces the
     configured database directory, which is how `plan` gets a lock of its
-    own (see plan_dbpath)."""
+    own (see plan_dbpath).
+
+    Either way the architecture list is pacman-conf's (see architectures()),
+    never pycman's guess at it. When pacman-conf cannot be asked the list is
+    left empty, which switches libalpm's check off: the packages come from
+    the configured repositories and pacman resolves them with its own list
+    in preflight() first, so an empty list costs nothing, while a wrong one
+    is the crash described above."""
     try:
         import pycman.config
         config = pycman.config.PacmanConfig(conf="/etc/pacman.conf")
         if dbpath:
             config.options["DBPath"] = dbpath
-        return config.initialize_alpm()
+        handle = config.initialize_alpm()
     except Exception:
         import glob
-        import os
         handle = pyalpm.Handle("/", dbpath or DBPATH)
         for path in glob.glob(DBPATH + "/sync/*.db"):
             handle.register_syncdb(os.path.basename(path)[:-3], 0)
-        return handle
+    try:
+        handle.arch = architectures() or []
+    except (AttributeError, TypeError):
+        pass
+    return handle
 
 
 def configured_dbpath():
@@ -214,6 +270,170 @@ def refresh_syncdbs():
                          % ("; ".join(lines) or "pacman exited with %d" % proc.returncode)})
 
 
+def preflight(names):
+    """Resolve the request with pacman before pyalpm is allowed to.
+
+    libalpm's prepare() refuses a transaction in three shapes: a missing
+    dependency, a conflict, and a package of the wrong architecture. pyalpm
+    0.12 reports the first and segfaults on the other two — its prepare()
+    wrapper reads whatever error list libalpm returns as missing-dependency
+    records, and a conflict record or a plain string is not one. Python
+    cannot catch a segfault, and a helper killed inside its transaction
+    leaves db.lck behind for every pacman command after it.
+
+    So pacman resolves the same request first — same repositories, same
+    ignores, its own architecture list — and only prints. A refusal comes
+    back as pacman's own sentence ("unresolvable package conflicts
+    detected", "package architecture is not valid") with nothing locked
+    for longer than pacman's look, and pyalpm then only ever prepares what
+    pacman has already resolved. A pacman that cannot be run is not a
+    refusal; the transaction proceeds as it did before this existed.
+
+    Returns None when pacman is content, otherwise its reason.
+    """
+    pacman = shutil.which("pacman") or "/usr/bin/pacman"
+    cmd = [pacman, "--sync", "--print", "--print-format", "%n",
+           "--needed", "--noconfirm"] + list(names)
+    try:
+        proc = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True,
+                              text=True, timeout=600)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode == 0:
+        return None
+    lines = [line.strip() for line in (proc.stderr + proc.stdout).splitlines()
+             if line.strip().startswith(("error:", "ERROR:", "::"))]
+    return "; ".join(lines) or ("pacman refused the transaction (exit %d)" % proc.returncode)
+
+
+def _pid_description(pid):
+    try:
+        with open(os.path.join(PROC, str(pid), "cmdline"), "rb") as fh:
+            words = [w.decode(errors="replace") for w in fh.read().split(b"\0") if w]
+    except OSError:
+        words = []
+    return "pid %d%s" % (pid, (" (" + " ".join(words[:3]) + ")") if words else "")
+
+
+def lock_holders(lockfile):
+    """PIDs that have the lock file open.
+
+    libalpm creates the lock with O_EXCL and keeps the descriptor open for
+    as long as it holds the lock, so an open file is a live owner and no
+    open file is a dead one. None when /proc cannot answer — not Linux, or
+    a process of the lock's owner that this one may not look into — which
+    the caller treats as "possibly held", never as free.
+    """
+    try:
+        pids = [int(p) for p in os.listdir(PROC) if p.isdigit()]
+        owner = os.stat(lockfile).st_uid
+    except OSError:
+        return None
+    holders = []
+    unreadable = False
+    for pid in pids:
+        fd_dir = os.path.join(PROC, str(pid), "fd")
+        try:
+            fds = os.listdir(fd_dir)
+        except PermissionError:
+            # A process this one may not look into could be the holder
+            # only if it runs as the user who created the lock: the lock is
+            # created by its holder. Root sees everything, and root is who
+            # runs the real thing; the tests are not root.
+            try:
+                if os.stat(os.path.join(PROC, str(pid))).st_uid == owner:
+                    unreadable = True
+            except OSError:
+                pass
+            continue
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                target = os.readlink(os.path.join(fd_dir, fd))
+            except OSError:
+                continue
+            if target == lockfile or target == lockfile + " (deleted)":
+                holders.append(pid)
+                break
+    if not holders and unreadable:
+        return None
+    return holders
+
+
+PACKAGE_MANAGERS = {"pacman", "pacman-key", "paru", "yay", "pamac", "pamac-daemon",
+                    "pikaur", "trizen", "makepkg", "pacman-db-upgrade"}
+
+
+def package_manager_running():
+    """Another package manager, lock or no lock yet: (pid, name) or None."""
+    own = os.getpid()
+    try:
+        pids = [int(p) for p in os.listdir(PROC) if p.isdigit()]
+    except OSError:
+        return None
+    for pid in pids:
+        if pid == own:
+            continue
+        try:
+            with open(os.path.join(PROC, str(pid), "comm")) as fh:
+                comm = fh.read().strip()
+            with open(os.path.join(PROC, str(pid), "cmdline"), "rb") as fh:
+                cmdline = fh.read()
+        except OSError:
+            continue
+        if comm in PACKAGE_MANAGERS:
+            return pid, comm
+        if b"pacman_helper.py" in cmdline:
+            return pid, "pacman_helper.py"
+    return None
+
+
+def clear_stale_lock(lockfile):
+    """Remove a lock that nothing holds. None when the way is clear,
+    otherwise why it is not.
+
+    pacman never removes a lock it did not create: "if you're sure a
+    package manager is not already running, you can remove it" is its
+    whole answer, and the person at the shell is the one who is sure. Here
+    nobody is at a shell. Every helper that has died with the lock in hand
+    — the download segfault of #37, the architecture refusal described at
+    architectures() — left every run after it failing with pm_errno 10
+    until someone opened a terminal and ran rm as root. This is that step,
+    with the checks a careful person makes first: no process has the file
+    open, no package manager is running, and the file is not brand new. A
+    lock that fails any of them stays, and the run reports who has it.
+    """
+    if not os.path.exists(lockfile):
+        return None
+    holders = lock_holders(lockfile)
+    if holders is None:
+        return ("%s exists and this process cannot tell whether a package "
+                "manager still holds it" % lockfile)
+    if holders:
+        return "pacman is busy: %s holds %s" % (
+            ", ".join(_pid_description(p) for p in holders), lockfile)
+    other = package_manager_running()
+    if other:
+        return "%s is running (pid %d); %s is its lock" % (other[1], other[0], lockfile)
+    try:
+        age = time.time() - os.stat(lockfile).st_mtime
+    except OSError:
+        age = 0
+    if age < 3:
+        return "%s was created a moment ago; another package manager may be starting" % lockfile
+    try:
+        os.unlink(lockfile)
+    except OSError as exc:
+        return "could not remove the stale lock %s: %s" % (lockfile, exc)
+    message = ("removed a stale pacman lock (%s): nothing held it and no package "
+               "manager was running, so an earlier run died without releasing it"
+               % lockfile)
+    emit({"event": "warning", "message": message})
+    print(message, file=sys.stderr)
+    return None
+
+
 def find_sync_pkg(handle, name):
     for db in handle.get_syncdbs():
         pkg = db.get_pkg(name)
@@ -223,14 +443,26 @@ def find_sync_pkg(handle, name):
 
 
 def run(action, specs, dry_run=False):
+    names = [spec.partition("=")[0] for spec in specs]
+    if not dry_run:
+        # Before anything that needs the lock — the refresh is the first
+        reason = clear_stale_lock(os.path.join(configured_dbpath(), "db.lck"))
+        if reason:
+            emit({"event": "error", "message": reason})
+            emit({"event": "done", "ok": False, "failed": list(specs)})
+            return 1
     # Reading the repositories is the whole point of install and upgrade, so
     # they get a fresh copy first. `plan` is deliberately left out: it runs
     # unprivileged, and writing the sync databases needs root.
     if action != "remove" and not dry_run:
         refresh_syncdbs()
+        reason = preflight(names)
+        if reason:
+            emit({"event": "error", "message": "pacman refused the transaction: %s" % reason})
+            emit({"event": "done", "ok": False, "failed": list(specs)})
+            return 1
     if not dry_run:
         return transact(init_handle(), action, specs, dry_run)
-    import shutil
     dbpath = plan_dbpath()
     try:
         return transact(init_handle(dbpath), action, specs, dry_run)
@@ -241,6 +473,7 @@ def run(action, specs, dry_run=False):
 def transact(handle, action, specs, dry_run):
     callbacks = Callbacks(handle)
     localdb = handle.get_localdb()
+    accepted = list(getattr(handle, "arch", None) or [])
 
     transaction = handle.init_transaction()
     try:
@@ -257,6 +490,16 @@ def transact(handle, action, specs, dry_run):
                 pkg = find_sync_pkg(handle, name)
                 if pkg is None:
                     emit({"event": "error", "message": f"package not found: {name}"})
+                    emit({"event": "done", "ok": False, "failed": list(specs)})
+                    return 1
+                # The check libalpm makes in prepare(), made here where a
+                # refusal is an event and not a segfault (see architectures())
+                arch = getattr(pkg, "arch", None)
+                if accepted and arch and arch != "any" and arch not in accepted:
+                    emit({"event": "error",
+                          "message": "package architecture is not valid: %s-%s-%s "
+                                     "(this pacman accepts %s)"
+                                     % (pkg.name, pkg.version, arch, ", ".join(accepted))})
                     emit({"event": "done", "ok": False, "failed": list(specs)})
                     return 1
                 # --needed, which is what the daemon's own `pacman -Syu` uses.

@@ -3,6 +3,31 @@
 Release notes per version. The section for the latest version is shown
 in-app when the plugin offers its own update.
 
+## Unreleased
+
+- **Arch on CachyOS: updates and previews no longer crash the helper, and
+  a crash no longer leaves pacman locked.** CachyOS's pacman resolves
+  `Architecture = auto` to the CPU's feature levels (x86_64, x86_64_v2,
+  x86_64_v3) and ships most of its repositories as x86_64_v3 packages. The
+  handle the helper built through pycman accepted x86_64 alone, so libalpm
+  refused every v3 package at prepare() — and pyalpm 0.12 turns that
+  refusal into a segfault rather than an exception: a plan died silently,
+  and an update died inside its transaction with `db.lck` still held. The
+  accepted architectures now come from `pacman-conf`, the way pacman
+  itself resolves them; a package outside the list is refused with its
+  architecture named before pyalpm gets to prepare it.
+
+- **pacman resolves a request before pyalpm does.** A conflict or a wrong
+  architecture makes pyalpm 0.12's prepare() segfault instead of raising,
+  so an update asks `pacman -Sp` first and reports pacman's own refusal
+  ("unresolvable package conflicts detected", …); pyalpm only prepares
+  what pacman has already resolved.
+
+- **A stale pacman lock no longer blocks every run after a crash.** When
+  `db.lck` exists, nothing has it open and no package manager is running,
+  the helper removes it, says so, and goes on. A lock something holds
+  stays, and the run names the holder instead of starting.
+
 ## 1.7.1 — 2026-10-26
 
 - **Arch: the update preview and the removal warning work.** Working out
